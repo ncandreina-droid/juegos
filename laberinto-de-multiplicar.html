@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El laberinto de multiplicar</title>
+<!-- Playwrite (letra escolar de España). Si no hay internet, se usa una letra parecida del ordenador. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playwrite+ES:wght@100..400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #2f2a4a;
+  --coral: #ff7a59;
+  --sun: #ffd166;
+  --mint: #7fd1ae;
+  --sky: #74c0fc;
+  --lila: #b197fc;
+  --paper: #fffdf7;
+  --verde: #8ce99a;
+  --amarillo: #ffe066;
+  --seto: #b9e4c4;
+  --text: "Playwrite ES", "Playwrite España", "Chalkboard SE", "Comic Sans MS", cursive;
+  --num: ui-rounded, "Arial Rounded MT Bold", "Nunito", "Trebuchet MS", "Segoe UI", sans-serif;
+  /* Tamaño de cada casilla: el tablero (12 × 9) siempre cabe en la pantalla. */
+  --c: min(calc((100vw - 400px) / 12), calc((100vh - 130px) / 9), 92px);
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--text); font-weight: 400; font-size: clamp(14px, 1.25vw, 20px); line-height: 1.9;
+  background: #f3f0ff radial-gradient(circle, #dcd4ff 2px, transparent 2.5px) 0 0 / 34px 34px; }
+header { text-align: center; padding: .3em 1em 0; }
+h1 { margin: 0; font-size: 1.5em; font-weight: 400; }
+header p { margin: 0; font-size: .85em; }
+button { font-family: var(--text); font-size: 1em; line-height: 1.7; cursor: pointer; border: .12em solid var(--ink); border-radius: 999px; padding: .2em 1.1em; background: #fff; color: var(--ink); box-shadow: 0 .2em 0 rgba(47,42,74,.18); transition: transform .08s; }
+button:hover { transform: translateY(-2px); }
+button:active { transform: translateY(2px); box-shadow: none; }
+button:disabled { opacity: .5; cursor: default; transform: none; }
+.suave { font-size: .75em; border: 0; background: transparent; box-shadow: none; opacity: .75; }
+
+main { display: flex; justify-content: center; align-items: flex-start; gap: 18px; padding: 8px 12px 16px; }
+
+/* El laberinto */
+#tablero { position: relative; flex: none; width: calc(var(--c) * 12); height: calc(var(--c) * 9); background: var(--seto); border: 5px solid #6dbb86; border-radius: 22px; box-shadow: 0 .4em 0 rgba(47,42,74,.15); overflow: hidden; }
+#tablero > * { position: absolute; left: calc(var(--c) * var(--x)); top: calc(var(--c) * var(--y)); }
+.seto { width: var(--c); height: var(--c); display: grid; place-items: center; font-size: calc(var(--c) * .5); line-height: 1; opacity: .8; }
+.t { width: calc(var(--c) - 8px); height: calc(var(--c) - 8px); margin: 4px; z-index: 2; display: grid; place-items: center; border-radius: 26%; background: #fff; border: 3px solid var(--col); font-family: var(--num); font-weight: 700; font-size: calc(var(--c) * .3); line-height: 1; white-space: nowrap; transition: background .3s, opacity .3s; }
+.con { z-index: 1; background: var(--col); border-radius: 99px; opacity: .85; transition: opacity .3s; }
+.con.h { width: var(--c); height: calc(var(--c) * .22); margin: calc(var(--c) * .39) 0 0 calc(var(--c) * .5); }
+.con.v { height: var(--c); width: calc(var(--c) * .22); margin: calc(var(--c) * .5) 0 0 calc(var(--c) * .39); }
+.p0 { --col: var(--sky); }
+.p1 { --col: var(--lila); }
+.p2 { --col: var(--coral); }
+.t.fin { --col: var(--ink); background: var(--sun); font-size: calc(var(--c) * .48); }
+.t.star { font-size: calc(var(--c) * .46); }
+.t.star:not(.verde) { filter: grayscale(1); opacity: .55; }
+.t.activa { animation: late 1s ease-in-out infinite alternate; box-shadow: 0 0 0 4px var(--ink); z-index: 3; filter: none; opacity: 1; }
+.t.star.activa { filter: none; opacity: 1; }
+@keyframes late { to { transform: scale(1.1); } }
+.t.amarilla { background: var(--amarillo); }
+.t.verde { background: var(--verde); border-color: #37b24d; animation: none; box-shadow: none; }
+.apagado { opacity: .22 !important; }
+#ficha { z-index: 5; width: var(--c); height: var(--c); display: grid; place-items: start end; font-size: calc(var(--c) * .5); line-height: 1; pointer-events: none; transition: left .5s ease, top .5s ease; filter: drop-shadow(0 2px 2px rgba(0,0,0,.3)); }
+
+/* El panel de juego */
+aside { width: 350px; flex: none; background: var(--paper); border: .14em solid var(--ink); border-radius: 1.4em; padding: .6em 1em 1em; text-align: center; box-shadow: 0 .4em 0 rgba(47,42,74,.15); }
+aside h2 { font-size: 1.15em; font-weight: 400; margin: 0 0 .3em; }
+.caminos { display: grid; gap: .55em; }
+.caminos button { border-radius: 1.1em; background: var(--col); line-height: 1.6; padding: .3em .8em; }
+.caminos button small { display: block; font-size: .7em; }
+.caminos .e { font-size: 1.6em; line-height: 1; vertical-align: middle; margin-right: .2em; }
+#marcador { font-size: 1.5em; line-height: 1.4; letter-spacing: .1em; }
+#paso { font-size: .8em; margin: 0; }
+.op { font-family: var(--num); font-weight: 700; font-size: 3em; line-height: 1.3; display: flex; justify-content: center; align-items: center; gap: .2em; margin: .1em 0 .2em; }
+.op input { width: 2.4em; font: inherit; text-align: center; color: var(--ink); border: .08em solid var(--ink); border-radius: .25em; padding: 0; background: #fff; }
+.op input:focus { outline: .1em solid var(--sky); }
+.op input:disabled { background: var(--amarillo); }
+#msg { min-height: 3.8em; margin: .4em 0 0; line-height: 1.8; }
+#msg b { font-family: var(--num); font-size: 1.5em; }
+.oculto { display: none !important; }
+
+/* Celebración */
+#fiesta { display: none; position: fixed; inset: 0; background: rgba(47,42,74,.88); color: #fff; text-align: center; flex-direction: column; justify-content: center; align-items: center; gap: .3em; padding: 1em; z-index: 9; }
+#fiesta.on { display: flex; animation: entra .4s ease; }
+@keyframes entra { from { opacity: 0; } to { opacity: 1; } }
+#fiesta .e { font-size: 5.5em; line-height: 1.2; animation: salta 1s ease-in-out infinite alternate; }
+@keyframes salta { to { transform: translateY(-.15em) rotate(6deg); } }
+#fiesta h2 { font-size: 1.9em; font-weight: 400; margin: 0; }
+#fiesta p { margin: 0; font-size: 1.2em; }
+#fiesta button { background: var(--sun); font-size: 1.1em; margin-top: .8em; }
+#fiesta button.suave { background: transparent; color: #fff; font-size: .9em; opacity: .9; }
+#fiesta .avisa { font-size: 1.6em; background: var(--sun); color: var(--ink); border-radius: 999px; padding: .1em 1.2em; margin-top: .5em; animation: late 1s ease-in-out infinite alternate; }
+#correo { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: .6em; }
+#correo input { font-family: var(--text); font-size: 1.1em; line-height: 1.7; text-align: center; color: var(--ink); border: .12em solid var(--ink); border-radius: 999px; padding: .2em 1em; margin-top: .8em; width: 13em; }
+#correoMsg { width: 100%; min-height: 1.9em; font-size: .9em !important; }
+
+@media (max-width: 900px) {
+  :root { --c: calc((100vw - 34px) / 12); }
+  main { flex-direction: column; align-items: center; }
+  aside { width: 100%; max-width: 520px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🌳 El laberinto de multiplicar</h1>
+  <p>Sal de 🚀 y llega hasta 🏆. Para avanzar, resuelve cada multiplicación.</p>
+</header>
+
+<main>
+  <div id="tablero"></div>
+
+  <aside>
+    <div id="elige">
+      <h2>Elige tu camino</h2>
+      <div class="caminos" id="caminos"></div>
+    </div>
+
+    <div id="juego" class="oculto">
+      <div id="marcador"></div>
+      <p id="paso"></p>
+
+      <div id="pregunta">
+        <div class="op"><span id="opTxt"></span><input id="resp" type="text" inputmode="numeric" maxlength="3" autocomplete="off" aria-label="Tu respuesta"></div>
+        <button id="bListo">✅ ¡Listo!</button>
+      </div>
+
+      <div id="estrella" class="oculto">
+        <h2>¡Casilla de estrella!</h2>
+        <button id="bEstrella">⭐ Recoger mi estrella</button>
+      </div>
+    </div>
+
+    <p id="msg">Hay tres caminos para salir del laberinto. ¿Cuál te apetece hoy?</p>
+    <button id="bNuevo" class="suave oculto">🔄 Empezar de nuevo</button>
+  </aside>
+</main>
+
+<div id="fiesta">
+  <span class="e">🏆</span>
+  <h2>¡Has salido del laberinto!</h2>
+  <p id="fiestaCamino"></p>
+  <p id="fiestaEstrellas"></p>
+  <p id="fiestaTxt"></p>
+  <p class="avisa">📣 ¡Avisa a la profe Andy!</p>
+  <div id="correo" class="oculto">
+    <input id="nombre" type="text" maxlength="30" autocomplete="off" placeholder="Escribe tu nombre" aria-label="Tu nombre">
+    <button id="bAvisar">📧 Avisar a la profe Andy</button>
+    <p id="correoMsg"></p>
+  </div>
+  <button id="bOtra" class="suave">🚀 Jugar otra vez</button>
+</div>
+
+<script>
+// ---- Ajustes para la profe ----
+const CORREO_PROFE = 'andyclases@proton.me';        // correo de la profe; mientras esté vacío, el botón «Avisar a la profe Andy» no aparece
+const ESPERA = 10;                 // segundos del «turno de espera» cuando fallan
+const ESTRELLAS = [4, 9, 14];      // en qué casillas del camino hay estrella (cada cuatro multiplicaciones)
+
+const FILAS = 9, COLS = 12, INICIO = [4, 0], META = [4, 11];
+const pares = (as, bs) => as.flatMap(a => bs.map(b => [a, b]));
+// Cada camino: 18 casillas [fila, columna] = 15 multiplicaciones + 3 estrellas.
+const CAMINOS = [
+  { nombre: 'Camino fácil', pista: 'Para calentar motores', animal: '🐢',
+    bolsa: () => [...pares([5, 6, 7, 8, 9], [1, 2, 3, 10]), [5, 4], [5, 5]],
+    celdas: [[3,0],[2,0],[1,0],[1,1],[1,2],[1,3],[0,3],[0,4],[0,5],[0,6],[1,6],[1,7],[1,8],[1,9],[1,10],[1,11],[2,11],[3,11]] },
+  { nombre: 'Camino medio', pista: 'Para pensar un poquito', animal: '🐇',
+    bolsa: () => pares([5, 6, 7, 8, 9], [3, 4, 5, 6]),
+    celdas: [[4,1],[4,2],[3,2],[3,3],[3,4],[4,4],[5,4],[5,5],[5,6],[4,6],[3,6],[3,7],[3,8],[4,8],[5,8],[5,9],[5,10],[4,10]] },
+  { nombre: 'Camino difícil', pista: 'Para superexploradores', animal: '🐆',
+    bolsa: () => pares([6, 7, 8, 9], [6, 7, 8, 9]),
+    celdas: [[5,0],[6,0],[7,0],[7,1],[7,2],[7,3],[7,4],[7,5],[7,6],[8,6],[8,7],[8,8],[8,9],[7,9],[7,10],[7,11],[6,11],[5,11]] }
+];
+const ADORNOS = ['🌳', '🌲', '🌷', '🍄', '🌳', '🌼', '🌲'];
+const ANIMOS = ['¡Muy bien!', '¡Genial!', '¡Así se hace!', '¡Estupendo!', '¡Qué bien piensas!', '¡Fenomenal!'];
+
+const $ = s => document.querySelector(s);
+const baraja = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pon = (el, [f, c]) => { el.style.setProperty('--x', c); el.style.setProperty('--y', f); };
+
+let casillas, camino, pos, estrellas, primeras, intentos, reloj, ficha;
+
+// Dibuja el laberinto con multiplicaciones nuevas.
+function monta() {
+  clearInterval(reloj);
+  const tab = $('#tablero'); tab.innerHTML = '';
+  const usadas = new Set([INICIO, META, ...CAMINOS.flatMap(c => c.celdas)].map(c => c.join()));
+  for (let f = 0; f < FILAS; f++) for (let c = 0; c < COLS; c++) {
+    if (usadas.has(f + ',' + c) || (f * 5 + c * 3) % 4) continue;
+    const s = document.createElement('div'); s.className = 'seto'; s.textContent = ADORNOS[(f * 3 + c) % ADORNOS.length];
+    pon(s, [f, c]); tab.appendChild(s);
+  }
+  casillas = CAMINOS.map((cam, k) => {
+    const ruta = [INICIO, ...cam.celdas, META];
+    for (let i = 0; i < ruta.length - 1; i++) {
+      const [a, b] = [ruta[i], ruta[i + 1]], con = document.createElement('div');
+      con.className = 'con p' + k + (a[0] === b[0] ? ' h' : ' v');
+      pon(con, [Math.min(a[0], b[0]), Math.min(a[1], b[1])]); tab.appendChild(con);
+    }
+    const ops = baraja(cam.bolsa()).slice(0, cam.celdas.length - ESTRELLAS.length);
+    return cam.celdas.map((celda, i) => {
+      const el = document.createElement('div'), star = ESTRELLAS.includes(i);
+      el.className = 't p' + k + (star ? ' star' : '');
+      if (star) el.textContent = '⭐';
+      pon(el, celda); tab.appendChild(el);
+      return { el, star, op: star ? null : ops.pop() };
+    });
+  });
+  [[INICIO, '🚀', 'Salida'], [META, '🏆', 'Meta']].forEach(([celda, e, t]) => {
+    const el = document.createElement('div'); el.className = 't fin'; el.textContent = e; el.title = t; pon(el, celda); tab.appendChild(el);
+  });
+  ficha = document.createElement('div'); ficha.id = 'ficha'; pon(ficha, INICIO); tab.appendChild(ficha);
+
+  camino = null; pos = 0; estrellas = 0; primeras = 0; intentos = 0;
+  $('#elige').classList.remove('oculto'); $('#juego').classList.add('oculto'); $('#bNuevo').classList.add('oculto');
+  $('#fiesta').classList.remove('on');
+  $('#msg').textContent = 'Hay tres caminos para salir del laberinto. ¿Cuál te apetece hoy?';
+}
+
+function elige(k) {
+  camino = k;
+  document.querySelectorAll('#tablero .t:not(.fin), #tablero .con').forEach(el => { if (!el.classList.contains('p' + k)) el.classList.add('apagado'); });
+  ficha.textContent = CAMINOS[k].animal;
+  $('#elige').classList.add('oculto'); $('#juego').classList.remove('oculto'); $('#bNuevo').classList.remove('oculto');
+  $('#msg').textContent = '¡Adelante! Escribe el resultado y pulsa «¡Listo!».';
+  siguiente();
+}
+
+function marcador() {
+  $('#marcador').textContent = '⭐'.repeat(estrellas) + '☆'.repeat(ESTRELLAS.length - estrellas);
+  $('#paso').textContent = 'Casilla ' + Math.min(pos + 1, casillas[camino].length) + ' de ' + casillas[camino].length;
+}
+
+// Prepara la casilla que toca (o termina el juego si ya no quedan).
+function siguiente() {
+  const ruta = casillas[camino];
+  marcador();
+  if (pos >= ruta.length) {
+    pon(ficha, META);
+    $('#pregunta').classList.add('oculto'); $('#estrella').classList.add('oculto');
+    setTimeout(() => {
+      const total = ruta.filter(c => !c.star).length;
+      $('#fiestaCamino').textContent = CAMINOS[camino].animal + ' ' + CAMINOS[camino].nombre;
+      $('#fiestaEstrellas').textContent = '⭐'.repeat(estrellas);
+      $('#fiestaTxt').textContent = primeras === total ? '¡Todas a la primera! ¡Increíble!' : 'Has acertado ' + primeras + ' de ' + total + ' a la primera.';
+      $('#fiesta').classList.add('on');
+    }, 900);
+    return;
+  }
+  const c = ruta[pos]; intentos = 0;
+  c.el.classList.add('activa');
+  $('#pregunta').classList.toggle('oculto', c.star);
+  $('#estrella').classList.toggle('oculto', !c.star);
+  if (c.star) { $('#bEstrella').focus(); return; }
+  c.el.textContent = c.op[0] + '×' + c.op[1];
+  $('#opTxt').textContent = c.op[0] + ' × ' + c.op[1] + ' =';
+  const inp = $('#resp'); inp.value = ''; inp.disabled = false; $('#bListo').disabled = false; inp.focus();
+}
+
+function avanza(c) {
+  c.el.classList.remove('activa', 'amarilla'); c.el.classList.add('verde');
+  pon(ficha, CAMINOS[camino].celdas[pos]);
+  pos++; siguiente();
+}
+
+function comprueba() {
+  const c = casillas[camino][pos], inp = $('#resp'), txt = inp.value.trim();
+  if (inp.disabled || !c || c.star || !/^\d+$/.test(txt)) { inp.focus(); return; }
+  intentos++;
+  if (+txt === c.op[0] * c.op[1]) {
+    if (intentos === 1) primeras++;
+    c.el.textContent = txt;
+    $('#msg').textContent = '🟢 ' + ANIMOS[Math.floor(Math.random() * ANIMOS.length)] + ' Puedes continuar.';
+    avanza(c);
+    return;
+  }
+  // Fallo: la casilla se pone amarilla y toca esperar un turno.
+  c.el.classList.add('amarilla');
+  inp.disabled = true; $('#bListo').disabled = true;
+  let quedan = ESPERA;
+  const pinta = () => { const m = $('#msg'); m.textContent = '🟡 ¡Casi! Espera tu turno y piénsalo otra vez… '; const b = document.createElement('b'); b.textContent = '⏳ ' + quedan; m.appendChild(b); };
+  pinta();
+  clearInterval(reloj);
+  reloj = setInterval(() => {
+    if (--quedan > 0) { pinta(); return; }
+    clearInterval(reloj);
+    inp.disabled = false; $('#bListo').disabled = false; inp.value = ''; inp.focus();
+    $('#msg').textContent = '¡Te toca otra vez! Tú puedes.';
+  }, 1000);
+}
+
+CAMINOS.forEach((cam, k) => {
+  const b = document.createElement('button'); b.className = 'p' + k;
+  const e = document.createElement('span'); e.className = 'e'; e.textContent = cam.animal;
+  const s = document.createElement('small'); s.textContent = cam.pista;
+  b.append(e, cam.nombre, s);
+  b.onclick = () => elige(k);
+  $('#caminos').appendChild(b);
+});
+$('#bListo').onclick = comprueba;
+$('#resp').addEventListener('keydown', e => { if (e.key === 'Enter') comprueba(); });
+$('#resp').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, ''); });
+$('#bEstrella').onclick = () => {
+  const c = casillas[camino][pos]; if (!c || !c.star) return;
+  estrellas++;
+  $('#msg').textContent = '⭐ ¡Estrella conseguida! Sigue así.';
+  avanza(c);
+};
+// Aviso por correo: solo dice quién ha completado el laberinto y cuándo (sin resultados).
+if (CORREO_PROFE) $('#correo').classList.remove('oculto');
+$('#bAvisar').onclick = () => {
+  const nombre = $('#nombre').value.trim();
+  if (!nombre) { $('#correoMsg').textContent = 'Escribe primero tu nombre.'; $('#nombre').focus(); return; }
+  const ahora = new Date();
+  const cuando = ahora.toLocaleDateString('es-ES') + ' a las ' + ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const asunto = 'Laberinto completado: ' + nombre;
+  const cuerpo = nombre + ' ha completado el laberinto de multiplicar.\n\nFecha: ' + cuando;
+  window.location.href = 'mailto:' + CORREO_PROFE + '?subject=' + encodeURIComponent(asunto) + '&body=' + encodeURIComponent(cuerpo);
+  $('#correoMsg').textContent = 'Se ha abierto tu correo: pulsa «Enviar» para avisar a la profe Andy.';
+};
+$('#bNuevo').onclick = monta;
+$('#bOtra').onclick = monta;
+
+monta();
+</script>
+</body>
+</html>
