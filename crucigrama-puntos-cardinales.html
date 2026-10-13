@@ -1,0 +1,420 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Los puntos cardinales</title><style>
+@page { size: A4; margin: 12mm; }
+* { box-sizing: border-box; }
+:root { --ink: #1d1b3a; --muted: #6b6889; --coral: #ff5d73; --sky: #3a86ff;
+        --sun: #ffb703; --mint: #06c79a; --grape: #8f4cf0; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body { font-family: "Andika", "Nunito", "Avenir Next", "Segoe UI", "Trebuchet MS", sans-serif;
+       color: var(--ink); background: #fff; margin: 0; }
+.page { position: relative; max-width: 186mm; margin: 0 auto; padding: 4mm 2mm 2mm;
+        break-after: page; }
+.page:last-child { break-after: auto; }
+.hero { position: relative; text-align: center; padding: 2mm 22mm 0; margin-bottom: 4mm; }
+.hero svg { position: absolute; top: 0; width: 22mm; height: 18mm; }
+.hero svg.l { left: 0; } .hero svg.r { right: 0; }
+.kicker { display: inline-block; font: 800 9pt/1 "Avenir Next", "Nunito", sans-serif;
+          letter-spacing: 0.25em; text-transform: uppercase; color: #fff; background: var(--ink);
+          border-radius: 99px; padding: 1.6mm 3.5mm 1.4mm; margin-bottom: 2.5mm; }
+h1 { font: 800 27pt/1.1 "Arial Rounded MT Bold", "Nunito", "Avenir Next", sans-serif;
+     letter-spacing: -0.01em; margin: 0; }
+h1 span { background: linear-gradient(transparent 62%, #ffe08a 62%, #ffe08a 92%, transparent 92%);
+          padding: 0 1.5mm; }
+.meta { display: flex; gap: 8mm; margin: 0 0 4mm; font-size: 11pt; }
+.field { flex: 1; display: flex; align-items: flex-end; gap: 2mm; color: var(--muted);
+         font-weight: 700; letter-spacing: 0.04em; }
+.field.date { flex: 0 0 55mm; }
+.field i { flex: 1; border-bottom: 0.5mm solid var(--ink); height: 6mm; opacity: 0.8; }
+.instr { display: flex; align-items: center; gap: 2.5mm; font-size: 12.5pt; margin: 0 0 1.5mm; }
+.instr::before { content: ""; flex: none; width: 3mm; height: 3mm; border-radius: 50%;
+                 background: var(--coral); box-shadow: 4mm 0 0 var(--sun), 8mm 0 0 var(--mint);
+                 margin-right: 8mm; }
+.note { font-size: 10.5pt; color: var(--muted); margin: 0 0 3mm 13mm; }
+.grid { display: grid; margin: 5mm auto 7mm; width: max-content; }
+.cell { width: var(--s); height: var(--s); position: relative; }
+.cell.l { border: 0.5mm solid var(--ink); margin: -0.25mm; background: #fff;
+          box-shadow: 1.1mm 1.1mm 0 var(--sun); }
+.cell.l.start { background: var(--t); }
+.cell .n { position: absolute; top: 0.5mm; left: 0.9mm; font: 800 calc(var(--s) * 0.27)/1 "Avenir Next", Arial, sans-serif;
+           color: var(--c); }
+.cell .a { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+           font: 800 calc(var(--s) * 0.52)/1 "Arial Rounded MT Bold", "Nunito", sans-serif; color: var(--grape); }
+.clues { display: grid; grid-template-columns: 1fr 1fr; gap: 7mm; font-size: 12.5pt; line-height: 1.35; }
+.clues h2 { display: inline-block; font: 800 11pt/1 "Avenir Next", "Nunito", sans-serif; letter-spacing: 0.12em;
+            text-transform: uppercase; color: #fff; border-radius: 99px; padding: 1.8mm 4mm 1.6mm; margin: 0 0 3mm; }
+.clues .h h2 { background: var(--coral); }
+.clues .v h2 { background: var(--sky); }
+.clues ol { list-style: none; padding: 0; margin: 0; }
+.clues li { display: flex; gap: 2.5mm; margin: 0 0 2.4mm; break-inside: avoid; }
+.clues li b { flex: none; display: inline-flex; align-items: center; justify-content: center;
+              width: 6.4mm; height: 6.4mm; border-radius: 50%; background: var(--c); color: #fff;
+              font: 800 9.5pt/1 "Avenir Next", Arial, sans-serif; margin-top: -0.3mm; }
+.clues .len { color: var(--muted); font-size: 10.5pt; white-space: nowrap; }
+.bank { position: relative; border-radius: 4mm; background: #f6f4fc; padding: 4mm 5mm;
+        margin-top: 5mm; text-align: center; break-inside: avoid; }
+.bank h2 { font: 800 10pt/1 "Avenir Next", "Nunito", sans-serif; letter-spacing: 0.2em; text-transform: uppercase;
+           color: var(--muted); margin: 0 0 3mm; }
+.bank ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 2.5mm; }
+.bank li { font: 800 12pt/1 "Arial Rounded MT Bold", "Nunito", sans-serif; letter-spacing: 0.06em;
+           background: #fff; border: 0.5mm solid var(--ink); border-radius: 99px; padding: 1.8mm 3.6mm;
+           box-shadow: 0.8mm 0.8mm 0 var(--sun); }
+.foot { text-align: center; margin-top: 5mm; }
+.foot span { display: inline-block; width: 2.4mm; height: 2.4mm; border-radius: 50%; margin: 0 1mm; }
+@media print { .foot { position: fixed; left: 0; right: 0; bottom: 0; margin: 0; } }
+@media screen {
+  body { background: #f3f1fa; padding: 10mm 4mm; }
+  .page { background: #fff; border-radius: 6mm; padding: 10mm 12mm; margin-bottom: 10mm;
+          box-shadow: 0 2mm 8mm rgba(29, 27, 58, 0.08); }
+}
+
+html, body { height: 100%; }
+body { padding: 0; }
+.page { break-after: auto; max-width: none; height: 100vh; margin: 0; border-radius: 0; box-shadow: none;
+        padding: 1.5vh 3vw 1vh; display: grid; grid-template-rows: auto 1fr auto; gap: 1vh; }
+.hero { padding: 0 12vh; margin: 0; }
+.hero svg { width: 11vh; height: 9vh; }
+.kicker { font-size: max(10px, 1.3vh); margin-bottom: 0.8vh; }
+h1 { font-size: clamp(22px, 4.6vh, 56px); }
+.bar { display: flex; justify-content: center; align-items: center; gap: 2vw; margin-top: 1vh; }
+.bar .instr { margin: 0; font-size: clamp(13px, 1.9vh, 20px); }
+.stage { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4vw; min-height: 0; }
+.stage .grid { margin: 0 auto; grid-template-columns: repeat(var(--cols), var(--s));
+               --s: min(calc(68vh / var(--rows)), calc(52vw / var(--cols))); }
+.stage .cell.l { border-width: max(1.5px, calc(var(--s) * 0.045)); margin: calc(var(--s) * -0.0225);
+                 box-shadow: calc(var(--s) * 0.09) calc(var(--s) * 0.09) 0 var(--sun); }
+.stage .clues { font-size: clamp(13px, min(2.3vh, 1.25vw), 24px); gap: 2.5vw; align-self: center; }
+.stage .clues h2 { font-size: 0.8em; margin-bottom: 1.4vh; }
+.stage .clues li { margin-bottom: 0.9vh; }
+.stage .clues li b { width: 1.75em; height: 1.75em; font-size: 0.75em; }
+.foot { margin: 0; }
+@media (max-aspect-ratio: 1/1) {
+  .page { height: auto; min-height: 100vh; }
+  .stage { grid-template-columns: 1fr; }
+  .stage .grid { --s: min(calc(94vw / var(--cols)), calc(60vh / var(--rows))); }
+  .stage .clues { font-size: 15px; }
+}
+.tools { display: flex; justify-content: center; flex-wrap: wrap; gap: 1vw; margin-top: 0.5vh; }
+.tools button { font: 800 clamp(12px, 1.7vh, 18px)/1 "Avenir Next", "Nunito", sans-serif; color: var(--ink);
+         background: #fff; border: 0.5mm solid var(--ink); border-radius: 99px; padding: 0.7vh 1.4vw;
+         min-height: 40px; cursor: pointer;
+         box-shadow: 0.8mm 0.8mm 0 var(--sun); transition: transform .15s, box-shadow .15s; }
+.tools button:hover { transform: translate(-0.3mm, -0.3mm); box-shadow: 1.1mm 1.1mm 0 var(--sun); }
+.tools button:focus-visible { outline: 3px solid var(--sky); outline-offset: 3px; }
+.tools .check { background: var(--ink); color: #fff; }
+.tools .wipe.sure { background: #fff1cc; }
+.sound[aria-pressed="false"] { box-shadow: 0.8mm 0.8mm 0 #d9d6e8; color: var(--muted); }
+.msg { text-align: center; font-weight: 800; font-size: clamp(14px, 2vh, 22px); min-height: 1.3em;
+       margin: 0.5vh 0 0; color: var(--ink); }
+.msg.win { color: #6a2fc4; }
+.grid { cursor: default; }
+.cell.l { cursor: pointer; }
+.cell.l .a { color: var(--ink); }
+.cell.l.ok, .cell.l.start.ok { background: #d6f7ee; }
+.cell.l.casi, .cell.l.start.casi { background: #fff; box-shadow: inset 0 0 0 calc(var(--s) * 0.1) #d62839; }
+.cell.l.given .a { color: #6a2fc4; }
+.grid.pick .cell.l.on { background: var(--hc); }
+.grid.pick .cell.l.on .n { color: var(--ink); }
+.cell.l.here .a, .grid.pick .cell.l.here .a { color: #fff; }
+.grid.pick .cell.l.here { background: var(--ink); }
+.grid.win .cell.l { animation: hop .6s cubic-bezier(.3,1.8,.5,1) both; animation-delay: var(--wd, 0ms); }
+@keyframes hop { 50% { transform: translateY(-1.5mm) scale(1.08); } }
+.clues li { cursor: pointer; }
+.clues li.done > span { color: var(--muted); }
+.clues li.done > span::after { content: " ✓"; color: #04875f; font-weight: 800; }
+.cell { transition: background-color .25s ease, transform .3s cubic-bezier(.3,1.6,.5,1),
+        box-shadow .3s ease; transition-delay: var(--d, 0ms); }
+.cell.band { background: repeating-linear-gradient(45deg, transparent 0 1.2mm, var(--bt) 1.2mm 1.8mm); }
+.cell.l.on { background: var(--hc); transform: translateY(-1.1mm) scale(1.06); z-index: 2;
+             box-shadow: 0 1.2mm 0 var(--ink); }
+.cell.l.on .n { color: #fff; }
+.cell.l.here { background: var(--ink); }
+.cell.l.here .n { color: #fff; }
+.clues li { border-radius: 3mm; padding: 1mm 1.5mm; margin-left: -1.5mm; cursor: default;
+            transition: background-color .25s, transform .25s; }
+.clues li.on { background: var(--t); transform: translateX(1.5mm); }
+.clues li.on b { animation: pop .45s cubic-bezier(.3,1.8,.5,1); }
+@keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.35); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+  .cell, .clues li { transition: background-color .2s; transition-delay: 0ms; }
+  .cell.l.on, .clues li.on { transform: none; }
+  .clues li.on b, .grid.win .cell.l { animation: none; }
+}
+@media print { .tools { display: none; } }
+</style></head><body>
+<section class="page">
+<header class="hero"><svg class="l" viewBox="0 0 88 72" aria-hidden="true">
+<circle cx="22" cy="24" r="14" fill="#ffb703"/>
+<path d="M50 14 l12 20 h-24 z" fill="#ff5d73" transform="rotate(-12 50 26)"/>
+<path d="M8 58 q8 -10 16 0 t16 0 t16 0" fill="none" stroke="#06c79a" stroke-width="5" stroke-linecap="round"/>
+<circle cx="74" cy="50" r="4" fill="#8f4cf0"/></svg><svg class="r" viewBox="0 0 88 72" aria-hidden="true">
+<rect x="50" y="10" width="22" height="22" rx="5" fill="#3a86ff" transform="rotate(14 61 21)"/>
+<path d="M28 8 v18 M19 17 h18" stroke="#8f4cf0" stroke-width="5" stroke-linecap="round"/>
+<circle cx="64" cy="56" r="10" fill="none" stroke="#ff5d73" stroke-width="5"/>
+<circle cx="18" cy="50" r="5" fill="#06c79a"/><circle cx="34" cy="62" r="3" fill="#ffb703"/></svg><div class="kicker">Crucigrama</div><h1><span>Los puntos cardinales</span></h1>
+<div class="bar"><p class="instr">Lee cada pista y escribe la palabra en las casillas.</p></div>
+<div class="bar tools">
+<button class="check" type="button">✔︎ Comprobar</button>
+<button class="hint" type="button">💡 Una letra</button>
+<button class="wipe" type="button">🧽 Borrar todo</button>
+<button class="sound" type="button" aria-pressed="true">🔊 Sonido: sí</button></div>
+<p class="msg" aria-live="polite">Haz clic en una casilla o en una pista y escribe.</p></header>
+<main class="stage"><div class="grid" style="--cols:8;--rows:9;--bt:#ece9f6"><div class="cell l start" data-r="0" data-c="0" style="--c:#ff5d73;--t:#ffe3e7"><span class="n">1</span><span class="a"></span></div><div class="cell l" data-r="0" data-c="1"><span class="a"></span></div><div class="cell l" data-r="0" data-c="2"><span class="a"></span></div><div class="cell l" data-r="0" data-c="3"><span class="a"></span></div><div class="cell l start" data-r="0" data-c="4" style="--c:#3a86ff;--t:#e1ecff"><span class="n">2</span><span class="a"></span></div><div class="cell" data-r="0" data-c="5"></div><div class="cell" data-r="0" data-c="6"></div><div class="cell" data-r="0" data-c="7"></div><div class="cell" data-r="1" data-c="0"></div><div class="cell" data-r="1" data-c="1"></div><div class="cell" data-r="1" data-c="2"></div><div class="cell" data-r="1" data-c="3"></div><div class="cell l start" data-r="1" data-c="4" style="--c:#ffb703;--t:#fff1cc"><span class="n">3</span><span class="a"></span></div><div class="cell l" data-r="1" data-c="5"><span class="a"></span></div><div class="cell l" data-r="1" data-c="6"><span class="a"></span></div><div class="cell" data-r="1" data-c="7"></div><div class="cell" data-r="2" data-c="0"></div><div class="cell" data-r="2" data-c="1"></div><div class="cell l start" data-r="2" data-c="2" style="--c:#06c79a;--t:#d6f7ee"><span class="n">4</span><span class="a"></span></div><div class="cell" data-r="2" data-c="3"></div><div class="cell l" data-r="2" data-c="4"><span class="a"></span></div><div class="cell" data-r="2" data-c="5"></div><div class="cell" data-r="2" data-c="6"></div><div class="cell" data-r="2" data-c="7"></div><div class="cell l start" data-r="3" data-c="0" style="--c:#8f4cf0;--t:#ece2fd"><span class="n">5</span><span class="a"></span></div><div class="cell l" data-r="3" data-c="1"><span class="a"></span></div><div class="cell l" data-r="3" data-c="2"><span class="a"></span></div><div class="cell l" data-r="3" data-c="3"><span class="a"></span></div><div class="cell l" data-r="3" data-c="4"><span class="a"></span></div><div class="cell" data-r="3" data-c="5"></div><div class="cell" data-r="3" data-c="6"></div><div class="cell" data-r="3" data-c="7"></div><div class="cell" data-r="4" data-c="0"></div><div class="cell" data-r="4" data-c="1"></div><div class="cell l" data-r="4" data-c="2"><span class="a"></span></div><div class="cell" data-r="4" data-c="3"></div><div class="cell" data-r="4" data-c="4"></div><div class="cell" data-r="4" data-c="5"></div><div class="cell" data-r="4" data-c="6"></div><div class="cell" data-r="4" data-c="7"></div><div class="cell l start" data-r="5" data-c="0" style="--c:#ff5d73;--t:#ffe3e7"><span class="n">6</span><span class="a"></span></div><div class="cell" data-r="5" data-c="1"></div><div class="cell l" data-r="5" data-c="2"><span class="a"></span></div><div class="cell" data-r="5" data-c="3"></div><div class="cell" data-r="5" data-c="4"></div><div class="cell" data-r="5" data-c="5"></div><div class="cell l start" data-r="5" data-c="6" style="--c:#3a86ff;--t:#e1ecff"><span class="n">7</span><span class="a"></span></div><div class="cell" data-r="5" data-c="7"></div><div class="cell l" data-r="6" data-c="0"><span class="a"></span></div><div class="cell" data-r="6" data-c="1"></div><div class="cell l" data-r="6" data-c="2"><span class="a"></span></div><div class="cell" data-r="6" data-c="3"></div><div class="cell l start" data-r="6" data-c="4" style="--c:#ffb703;--t:#fff1cc"><span class="n">8</span><span class="a"></span></div><div class="cell l" data-r="6" data-c="5"><span class="a"></span></div><div class="cell l" data-r="6" data-c="6"><span class="a"></span></div><div class="cell l" data-r="6" data-c="7"><span class="a"></span></div><div class="cell l start" data-r="7" data-c="0" style="--c:#06c79a;--t:#d6f7ee"><span class="n">9</span><span class="a"></span></div><div class="cell l" data-r="7" data-c="1"><span class="a"></span></div><div class="cell l" data-r="7" data-c="2"><span class="a"></span></div><div class="cell" data-r="7" data-c="3"></div><div class="cell" data-r="7" data-c="4"></div><div class="cell" data-r="7" data-c="5"></div><div class="cell l" data-r="7" data-c="6"><span class="a"></span></div><div class="cell" data-r="7" data-c="7"></div><div class="cell l" data-r="8" data-c="0"><span class="a"></span></div><div class="cell" data-r="8" data-c="1"></div><div class="cell l start" data-r="8" data-c="2" style="--c:#8f4cf0;--t:#ece2fd"><span class="n">10</span><span class="a"></span></div><div class="cell l" data-r="8" data-c="3"><span class="a"></span></div><div class="cell l" data-r="8" data-c="4"><span class="a"></span></div><div class="cell l" data-r="8" data-c="5"><span class="a"></span></div><div class="cell l" data-r="8" data-c="6"><span class="a"></span></div><div class="cell" data-r="8" data-c="7"></div></div><div class="clues"><div class="h"><h2>Horizontales →</h2><ol><li data-w="8" style="--c:#ff5d73;--t:#ffe3e7"><b>1</b><span>Por aquí se esconde el sol por la tarde. <span class="len">(5 letras)</span></span></li><li data-w="6" style="--c:#ffb703;--t:#fff1cc"><b>3</b><span>Es lo contrario del norte. <span class="len">(3 letras)</span></span></li><li data-w="2" style="--c:#8f4cf0;--t:#ece2fd"><b>5</b><span>La aguja de la brújula siempre señala hacia el ___. <span class="len">(5 letras)</span></span></li><li data-w="4" style="--c:#ffb703;--t:#fff1cc"><b>8</b><span>Atrae los clips y las cosas de hierro. <span class="len">(4 letras)</span></span></li><li data-w="7" style="--c:#06c79a;--t:#d6f7ee"><b>9</b><span>La estrella que vemos en el cielo durante el día. <span class="len">(3 letras)</span></span></li><li data-w="1" style="--c:#8f4cf0;--t:#ece2fd"><b>10</b><span>Parte de la brújula que se mueve y señala el norte. <span class="len">(5 letras)</span></span></li></ol></div><div class="v"><h2>Verticales ↓</h2><ol><li data-w="5" style="--c:#3a86ff;--t:#e1ecff"><b>2</b><span>Por aquí sale el sol cada mañana. <span class="len">(4 letras)</span></span></li><li data-w="0" style="--c:#06c79a;--t:#d6f7ee"><b>4</b><span>Aparato con una aguja que nos ayuda a orientarnos. <span class="len">(7 letras)</span></span></li><li data-w="9" style="--c:#ff5d73;--t:#ffe3e7"><b>6</b><span>La ___ de los vientos dibuja los cuatro puntos cardinales. <span class="len">(4 letras)</span></span></li><li data-w="3" style="--c:#3a86ff;--t:#e1ecff"><b>7</b><span>Dibujo de un lugar visto desde arriba, para no perderse. <span class="len">(4 letras)</span></span></li></ol></div></div></main>
+<div class="foot"><span style="background:#ff5d73"></span><span style="background:#3a86ff"></span><span style="background:#ffb703"></span><span style="background:#06c79a"></span><span style="background:#8f4cf0"></span></div>
+</section>
+<script type="application/json" id="words">[{"n": 4, "c": "#06c79a", "t": "#d6f7ee", "d": "V", "w": "BRUJULA", "cells": [[2, 2], [3, 2], [4, 2], [5, 2], [6, 2], [7, 2], [8, 2]]}, {"n": 10, "c": "#8f4cf0", "t": "#ece2fd", "d": "H", "w": "AGUJA", "cells": [[8, 2], [8, 3], [8, 4], [8, 5], [8, 6]]}, {"n": 5, "c": "#8f4cf0", "t": "#ece2fd", "d": "H", "w": "NORTE", "cells": [[3, 0], [3, 1], [3, 2], [3, 3], [3, 4]]}, {"n": 7, "c": "#3a86ff", "t": "#e1ecff", "d": "V", "w": "MAPA", "cells": [[5, 6], [6, 6], [7, 6], [8, 6]]}, {"n": 8, "c": "#ffb703", "t": "#fff1cc", "d": "H", "w": "IMAN", "cells": [[6, 4], [6, 5], [6, 6], [6, 7]]}, {"n": 2, "c": "#3a86ff", "t": "#e1ecff", "d": "V", "w": "ESTE", "cells": [[0, 4], [1, 4], [2, 4], [3, 4]]}, {"n": 3, "c": "#ffb703", "t": "#fff1cc", "d": "H", "w": "SUR", "cells": [[1, 4], [1, 5], [1, 6]]}, {"n": 9, "c": "#06c79a", "t": "#d6f7ee", "d": "H", "w": "SOL", "cells": [[7, 0], [7, 1], [7, 2]]}, {"n": 1, "c": "#ff5d73", "t": "#ffe3e7", "d": "H", "w": "OESTE", "cells": [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4]]}, {"n": 6, "c": "#ff5d73", "t": "#ffe3e7", "d": "V", "w": "ROSA", "cells": [[5, 0], [6, 0], [7, 0], [8, 0]]}]</script>
+<script>
+const WORDS = JSON.parse(document.getElementById('words').textContent);
+const cellAt = {};
+document.querySelectorAll('.grid .cell').forEach(el => { cellAt[el.dataset.r + ',' + el.dataset.c] = el; });
+const clueOf = {};
+document.querySelectorAll('.clues li').forEach(li => { clueOf[li.dataset.w] = li; });
+const wordsAt = {};
+WORDS.forEach((w, i) => w.cells.forEach(([r, c]) => (wordsAt[r + ',' + c] ||= []).push(i)));
+
+// Sound: soft marimba-like blips on a pentatonic scale (no audio files needed).
+const SCALE = [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51, 1567.98, 1760, 2093];
+let ctx = null, soundOn = true;
+const btn = document.querySelector('.sound');
+function audio() {
+  if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+  if (ctx.state === 'suspended') ctx.resume();
+  return ctx;
+}
+function blip(freq, when, vol) {
+  const a = audio(), t = a.currentTime + when;
+  const o = a.createOscillator(), o2 = a.createOscillator(), g = a.createGain();
+  o.type = 'sine'; o.frequency.value = freq;
+  o2.type = 'triangle'; o2.frequency.value = freq * 2;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol, t + 0.008);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + 0.35);
+  o.connect(g); o2.connect(g); g.connect(a.destination);
+  o.start(t); o2.start(t); o.stop(t + 0.4); o2.stop(t + 0.4);
+}
+function playWord(i) {
+  if (!soundOn || !ctx || ctx.state !== 'running') return;
+  const start = (WORDS[i].n * 2) % 4;
+  WORDS[i].cells.forEach((_, k) => blip(SCALE[Math.min(start + k, SCALE.length - 1)], k * 0.045, 0.05));
+}
+btn.addEventListener('click', () => {
+  soundOn = !(soundOn && ctx && ctx.state === 'running');
+  btn.setAttribute('aria-pressed', soundOn);
+  btn.textContent = soundOn ? '🔊 Sonido: sí' : '🔈 Sonido: no';
+  if (soundOn) { audio(); blip(784, 0, 0.05); blip(1046.5, 0.08, 0.05); }
+});
+// Browsers only allow sound after a click or key press on the page.
+['pointerdown', 'keydown'].forEach(ev => addEventListener(ev, () => { if (soundOn) audio(); }, { once: true }));
+
+let current = '';
+let sel = null;   // {w: word index, k: letter index} while typing
+function clear() {
+  document.querySelectorAll('.on, .here, .band').forEach(el => {
+    el.classList.remove('on', 'here', 'band'); el.style.removeProperty('--d');
+  });
+}
+function light(ids, r, c) {
+  const key = ids.join(' ') + '|' + r + ',' + c;
+  if (key === current) return;
+  const fresh = ids.filter(i => !current.split('|')[0].split(' ').includes(String(i)));
+  current = key; clear();
+  if (r !== null) {
+    Object.values(cellAt).forEach(el => {
+      if (!el.classList.contains('l') && (el.dataset.r == r || el.dataset.c == c)) el.classList.add('band');
+    });
+  }
+  ids.forEach(i => {
+    const w = WORDS[i];
+    w.cells.forEach(([rr, cc], k) => {
+      const el = cellAt[rr + ',' + cc];
+      // Typing uses the soft tint so the letters stay readable; hovering uses the strong colour.
+      el.style.setProperty('--hc', sel ? w.t : w.c); el.style.setProperty('--d', (k * 35) + 'ms');
+      el.classList.add('on');
+    });
+    clueOf[i].classList.add('on');
+  });
+  if (r !== null && ids.length) cellAt[r + ',' + c].classList.add('here');
+  if (fresh.length) playWord(fresh[0]);
+}
+const gridEl = document.querySelector('.grid');
+// Hover previews a word only while nobody is typing; leaving goes back to the typing word.
+gridEl.addEventListener('pointerover', e => {
+  if (sel) return;
+  const el = e.target.closest('.cell'); if (!el) return;
+  const r = +el.dataset.r, c = +el.dataset.c;
+  light(wordsAt[r + ',' + c] || [], r, c);
+});
+gridEl.addEventListener('pointerleave', () => { if (!sel) { current = ''; clear(); } });
+document.querySelectorAll('.clues li').forEach(li => {
+  li.addEventListener('pointerenter', () => { if (!sel) light([+li.dataset.w], null, null); });
+  li.addEventListener('pointerleave', () => { if (!sel) { current = ''; clear(); } });
+});
+
+// ---- Typing ----
+const SOL = {}, letters = {};
+WORDS.forEach(w => w.cells.forEach(([r, c], k) => { SOL[r + ',' + c] = w.w[k]; }));
+const ORDER = WORDS.map((w, i) => i).sort((a, b) =>
+  (WORDS[a].d === WORDS[b].d ? 0 : WORDS[a].d === 'H' ? -1 : 1) || WORDS[a].n - WORDS[b].n);
+const STORE = 'crucigrama:' + document.title;
+try { Object.assign(letters, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) {}
+const save = () => { try { localStorage.setItem(STORE, JSON.stringify(letters)); } catch (e) {} };
+const msg = document.querySelector('.msg');
+const say = (text, win) => { msg.textContent = text; msg.classList.toggle('win', !!win); };
+const keyOf = (i, k) => WORDS[i].cells[k].join(',');
+const curKey = () => keyOf(sel.w, sel.k);
+const indexIn = (i, key) => WORDS[i].cells.findIndex(rc => rc.join(',') === key);
+const firstEmpty = i => Math.max(0, WORDS[i].cells.findIndex(rc => !letters[rc.join(',')]));
+
+function paint(key) {
+  const el = cellAt[key];
+  el.querySelector('.a').textContent = letters[key] || '';
+  el.classList.remove('ok', 'casi');
+}
+function show() {
+  gridEl.classList.toggle('pick', !!sel);
+  if (!sel) { current = ''; clear(); return; }
+  const [r, c] = WORDS[sel.w].cells[sel.k];
+  light([sel.w], r, c);
+}
+function pick(i, k) { sel = { w: i, k: k === undefined ? firstEmpty(i) : k }; show(); }
+
+// Letters as on paper: no accents, Ñ stays.
+function letterOf(key) {
+  if (key.length !== 1) return '';
+  let u = key.toUpperCase();
+  if (u !== 'Ñ') u = u.normalize('NFD').replace(/[̀-ͯ]/g, '');
+  return /^[A-ZÑ]$/.test(u) ? u : '';
+}
+function tick(k) { if (soundOn && ctx && ctx.state === 'running') blip(SCALE[k % SCALE.length], 0, 0.035); }
+
+let doneBefore = new Set();
+function progress(quiet) {
+  const done = new Set();
+  WORDS.forEach((w, i) => {
+    const ok = w.cells.every(rc => letters[rc.join(',')] === SOL[rc.join(',')]);
+    clueOf[i].classList.toggle('done', ok);
+    if (ok) done.add(i);
+  });
+  if (!quiet) done.forEach(i => { if (!doneBefore.has(i)) playWord(i); });
+  if (done.size === WORDS.length && (!quiet || doneBefore.size !== done.size)) win(quiet);
+  doneBefore = done;
+}
+function win(quiet) {
+  say('¡Crucigrama completo! ¡Muy bien! 🎉', true);
+  if (quiet) return;
+  sel = null; show();
+  Object.values(cellAt).forEach((el, k) => el.style.setProperty('--wd', (k % 12) * 40 + 'ms'));
+  gridEl.classList.remove('win'); void gridEl.offsetWidth; gridEl.classList.add('win');
+  if (soundOn && ctx && ctx.state === 'running') [0, 2, 4, 5, 7].forEach((s, k) => blip(SCALE[s], k * 0.09, 0.06));
+}
+
+function put(ch) {
+  const key = curKey();
+  letters[key] = ch; paint(key); save(); tick(sel.k);
+  if (sel.k < WORDS[sel.w].cells.length - 1) sel.k++;
+  show(); progress();
+}
+function back() {
+  let key = curKey();
+  if (!letters[key] && sel.k > 0) { sel.k--; key = curKey(); }
+  delete letters[key]; paint(key); save(); show(); progress(true);
+}
+function move(dr, dc) {
+  let [r, c] = WORDS[sel.w].cells[sel.k];
+  for (;;) {
+    r += dr; c += dc;
+    if (r < 0 || c < 0 || r > 60 || c > 60) return;
+    const ids = wordsAt[r + ',' + c];
+    if (!ids) continue;
+    const want = dr ? 'V' : 'H';
+    const i = ids.find(j => WORDS[j].d === want) ?? ids[0];
+    pick(i, indexIn(i, r + ',' + c)); return;
+  }
+}
+function turn() {
+  const key = curKey(), other = (wordsAt[key] || []).find(j => j !== sel.w);
+  if (other !== undefined) pick(other, indexIn(other, key));
+}
+function jump(step) {
+  const at = ORDER.indexOf(sel.w);
+  pick(ORDER[(at + step + ORDER.length) % ORDER.length]);
+}
+
+gridEl.addEventListener('click', e => {
+  const el = e.target.closest('.cell.l'); if (!el) return;
+  const key = el.dataset.r + ',' + el.dataset.c, ids = wordsAt[key];
+  // Clicking the same square again switches between across and down.
+  if (sel && curKey() === key && ids.length > 1) { turn(); return; }
+  const i = sel && ids.includes(sel.w) ? sel.w : ids[0];
+  pick(i, indexIn(i, key));
+});
+document.querySelectorAll('.clues li').forEach(li => li.addEventListener('click', () => pick(+li.dataset.w)));
+
+addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey) return;
+  // Space/Enter on a focused button press it; letters still go to the grid.
+  if ((e.key === ' ' || e.key === 'Enter') && e.target.closest && e.target.closest('button')) return;
+  const ch = letterOf(e.key);
+  if (!sel) {
+    // A letter with nothing selected starts the first unfinished word; a full grid ignores it.
+    const i = ch ? ORDER.find(j => WORDS[j].cells.some(rc => !letters[rc.join(',')])) : undefined;
+    if (i === undefined) return;
+    pick(i);
+  }
+  if (ch) { put(ch); }
+  else if (e.key === 'Backspace') back();
+  else if (e.key === 'Delete') { delete letters[curKey()]; paint(curKey()); save(); progress(true); }
+  else if (e.key === 'ArrowRight') move(0, 1);
+  else if (e.key === 'ArrowLeft') move(0, -1);
+  else if (e.key === 'ArrowDown') move(1, 0);
+  else if (e.key === 'ArrowUp') move(-1, 0);
+  else if (e.key === 'Tab' || e.key === 'Enter') jump(e.shiftKey ? -1 : 1);
+  else if (e.key === ' ') turn();
+  else if (e.key === 'Escape') { sel = null; show(); }
+  else return;
+  e.preventDefault();
+});
+
+// Checking: right letters go green; a wrong letter keeps its white square and gets a red frame, so it stays readable.
+document.querySelector('.check').addEventListener('click', () => {
+  // Drop the selection so its highlight doesn't hide the green/red marks.
+  sel = null; show();
+  let ok = 0, casi = 0;
+  Object.keys(letters).forEach(key => {
+    const right = letters[key] === SOL[key];
+    cellAt[key].classList.toggle('ok', right); cellAt[key].classList.toggle('casi', !right);
+    right ? ok++ : casi++;
+  });
+  if (!ok && !casi) say('Todavía no hay letras. ¡Elige una pista y empieza!');
+  else if (casi) say(`¡${ok} letras bien! Mira otra vez las casillas con marco rojo.`);
+  else if (ok === Object.keys(SOL).length) say('¡Todo perfecto! 🎉', true);
+  else say(`¡${ok} letras bien! Sigue así.`);
+});
+document.querySelector('.hint').addEventListener('click', () => {
+  if (!sel) { say('Primero elige una casilla o una pista.'); return; }
+  const key = curKey();
+  letters[key] = SOL[key]; paint(key); cellAt[key].classList.add('given'); save();
+  if (sel.k < WORDS[sel.w].cells.length - 1) sel.k++;
+  show(); progress();
+});
+const wipe = document.querySelector('.wipe');
+let wipeTimer = null;
+wipe.addEventListener('click', () => {
+  // Two clicks, so a slip never erases the class's work.
+  if (!wipe.classList.contains('sure')) {
+    wipe.classList.add('sure'); wipe.textContent = '¿Seguro? Pulsa otra vez';
+    wipeTimer = setTimeout(() => { wipe.classList.remove('sure'); wipe.textContent = '🧽 Borrar todo'; }, 3000);
+    return;
+  }
+  clearTimeout(wipeTimer); wipe.classList.remove('sure'); wipe.textContent = '🧽 Borrar todo';
+  Object.keys(letters).forEach(key => delete letters[key]);
+  Object.keys(SOL).forEach(key => { paint(key); cellAt[key].classList.remove('given'); });
+  gridEl.classList.remove('win'); save(); doneBefore = new Set(); progress(true);
+  sel = null; show(); say('Haz clic en una casilla o en una pista y escribe.');
+});
+
+Object.keys(letters).forEach(key => { if (SOL[key]) paint(key); else delete letters[key]; });
+progress(true);
+</script>
+</body></html>
