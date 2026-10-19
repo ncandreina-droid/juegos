@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="es" data-tema="oceano"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="asignatura" content="Matemáticas">
+<title>El mapa del tesoro</title>
+<style>
+/* Kit for children's pages — tokens, themes, layout, components. Pages use only these variables. */
+
+/* Themes: same perceived lightness everywhere (OKLCH L), only hue and chroma change → contrast holds. */
+:root, [data-tema="clasico"] {
+  --h: 330; --h2: 280;
+  --fondo: oklch(0.975 0.012 var(--h));
+  --superficie: oklch(0.995 0.004 var(--h));
+  --texto: oklch(0.25 0.03 var(--h2));
+  --texto-suave: oklch(0.43 0.03 var(--h2));
+  --acento: oklch(0.47 0.15 var(--h));
+  --acento-texto: oklch(0.995 0.004 var(--h));
+  --bien: oklch(0.50 0.12 150);
+  --casi: oklch(0.55 0.13 70);
+  --borde: oklch(0.86 0.02 var(--h));
+  --motivo: "✿";
+}
+[data-tema="oceano"]   { --h: 220; --h2: 240; --motivo: "≈"; }
+[data-tema="selva"]    { --h: 145; --h2: 160; --motivo: "❦"; }
+[data-tema="espacio"]  { --h: 285; --h2: 270; --motivo: "✦"; }
+[data-tema="otono"]    { --h: 45;  --h2: 30;  --motivo: "❧"; }
+[data-tema="invierno"] { --h: 235; --h2: 250; --motivo: "❄"; }
+[data-tema="primavera"]{ --h: 350; --h2: 330; --motivo: "❀"; }
+/* Greens: keep «bien» distinguishable from the accent. */
+[data-tema="selva"] { --bien: oklch(0.50 0.12 200); }
+
+:root {
+  --t-base: 28px; --t-peque: 22px; --t-titulo: 48px; --t-grande: 64px;
+  --radio: 18px; --sombra: 0 6px 0 var(--borde);
+  --sistema: ui-rounded, "SF Pro Rounded", "Avenir Next", "Helvetica Neue", system-ui, sans-serif;
+  --margen: 40px; --margen-abajo: 88px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--fondo); color: var(--texto); font: 500 var(--t-base)/1.35 var(--sistema);
+  -webkit-font-smoothing: antialiased; overflow: hidden;
+}
+[data-letra="ligada"] { font-family: "Playwrite ES", cursive; font-weight: 400; }
+:focus-visible { outline: 4px solid var(--acento); outline-offset: 4px; border-radius: 10px; }
+
+/* Stage: one screen, no scrolling, edges clear for Meet's floating bars. */
+.k-escena { height: 100vh; display: grid; grid-template-rows: auto 1fr auto; gap: 16px;
+  padding: 84px var(--margen) var(--margen-abajo); position: relative; }
+.k-escena::before, .k-escena::after { content: var(--motivo); position: absolute; font-size: 56px; color: var(--borde);
+  pointer-events: none; }
+.k-escena::before { bottom: 18px; left: 22px; transform: rotate(-14deg); } .k-escena::after { bottom: 18px; right: 22px; transform: rotate(18deg); }
+.k-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.k-titulo { font-size: var(--t-titulo); line-height: 1.05; margin: 0; letter-spacing: -0.01em; }
+.k-consigna { font-size: var(--t-base); color: var(--texto-suave); margin: 6px 0 0; }
+.k-centro { display: grid; place-items: center; min-height: 0; }
+.k-pie { display: flex; justify-content: center; gap: 16px; align-items: center; }
+
+/* Buttons and cards */
+.k-btn { min-height: 64px; min-width: 64px; padding: 0 26px; border-radius: 999px; border: 3px solid var(--texto);
+  background: var(--superficie); color: var(--texto); font: 700 var(--t-peque)/1 var(--sistema); cursor: pointer;
+  box-shadow: 0 4px 0 var(--texto); transition: transform .12s, box-shadow .12s; }
+.k-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--texto); }
+.k-btn.k-principal { background: var(--acento); color: var(--acento-texto); border-color: var(--acento); box-shadow: 0 4px 0 var(--texto); }
+.k-btn.k-pequeno { min-height: 48px; font-size: 18px; padding: 0 16px; }
+.k-tarjeta { background: var(--superficie); border: 3px solid var(--borde); border-radius: var(--radio);
+  padding: 18px 22px; box-shadow: var(--sombra); }
+.k-opciones { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; width: min(100%, 1000px); }
+.k-opcion { min-height: 96px; font-size: var(--t-base); text-align: center; border: 3px solid var(--texto);
+  border-radius: var(--radio); background: var(--superficie); color: var(--texto); cursor: pointer; padding: 14px;
+  box-shadow: 0 5px 0 var(--texto); transition: transform .12s; position: relative; font-family: inherit; font-weight: 600; }
+.k-opcion .k-num { position: absolute; top: 8px; left: 12px; font-size: 16px; color: var(--texto-suave); }
+.k-opcion[aria-pressed="true"], .k-sel { outline: 5px solid var(--acento); outline-offset: 3px; }
+.k-opcion.k-ok { border-color: var(--bien); box-shadow: 0 5px 0 var(--bien); }
+.k-opcion.k-otra { border-style: dashed; border-color: var(--casi); box-shadow: none; }
+
+/* Feedback: icon + word + colour, never colour alone */
+.k-aviso { position: fixed; left: 50%; top: 20px; transform: translate(-50%, -16px); opacity: 0; z-index: 8; pointer-events: none;
+  padding: 14px 26px; border-radius: 999px; font: 700 var(--t-base)/1 var(--sistema); background: var(--superficie);
+  border: 3px solid currentColor; transition: opacity .2s, transform .2s; }
+.k-aviso.k-ver { opacity: 1; transform: translate(-50%, 0); }
+.k-aviso.k-bien { color: var(--bien); } .k-aviso.k-casi { color: var(--casi); }
+.k-progreso { display: flex; gap: 10px; }
+.k-progreso i { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--texto-suave); }
+.k-progreso i.k-hecho { background: var(--bien); border-color: var(--bien); }
+.k-progreso i.k-ahora { border-color: var(--acento); background: var(--acento); }
+.k-confeti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+.k-confeti span { position: absolute; top: -40px; font-size: 34px; animation: k-cae 1.4s ease-in forwards; }
+@keyframes k-cae { to { transform: translateY(110vh) rotate(260deg); } }
+
+/* Teacher view: hidden for children, shown in the #profe tab */
+[data-profe] { display: none !important; }
+body.k-profe [data-profe] { display: revert !important; }
+body.k-profe { overflow: auto; }
+body.k-profe::before { content: "Vista profe · los niños no ven esto"; position: fixed; top: 0; left: 0; right: 0; z-index: 9;
+  background: var(--texto); color: var(--fondo); font: 700 16px/1 var(--sistema); padding: 8px 14px; text-align: center; }
+.k-solucion { color: var(--bien); font-weight: 700; }
+body.k-profe .k-herramientas { top: 46px; }
+
+/* Corner tools */
+.k-herramientas { position: fixed; top: 14px; right: 16px; display: flex; gap: 8px; z-index: 5; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (max-width: 760px) { :root { --t-base: 22px; --t-titulo: 34px; --margen: 16px; --margen-abajo: 24px; } body { overflow: auto; } .k-escena { height: auto; min-height: 100vh; } }
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { overflow: visible; background: #fff; }
+  .k-escena { height: auto; padding: 0; } .k-escena::before, .k-escena::after { display: none; }
+  .k-herramientas, .k-pie, .k-aviso, [data-profe] { display: none !important; }
+  .k-imprimir-nombre { display: flex !important; gap: 12mm; font-size: 12pt; margin-bottom: 6mm; }
+  .k-imprimir-nombre span { flex: 1; border-bottom: .4mm solid #000; }
+}
+.k-imprimir-nombre { display: none; }
+
+/* — página — */
+
+.juego { display: grid; grid-template-columns: 1fr 330px; gap: 40px; align-items: center; width: min(100%, 1100px); }
+.izq { display: grid; gap: 14px; }
+.nivel { margin: 0; color: var(--texto-suave); font-size: var(--t-base); }
+.op { margin: 0; font-size: calc(var(--t-titulo) * 1.4); font-weight: 700; }
+.izq .k-opciones { grid-template-columns: repeat(2, 1fr); width: 100%; }
+.mapa { position: relative; width: 330px; height: 330px; border: 4px solid var(--borde); border-radius: var(--radio); overflow: hidden; }
+.mapa svg { width: 100%; height: 100%; display: block; }
+.tapas { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); }
+.tapas i { background: var(--acento); border: 2px solid var(--fondo); display: grid; place-items: center; color: var(--acento-texto); font-style: normal; font-size: var(--t-base); font-weight: 700; transition: opacity .6s; }
+.tapas i.fuera { opacity: 0; }
+#profe { position: fixed; top: 150px; right: 24px; width: 360px; font-size: var(--t-peque); padding: 10px 18px; }
+#profe p { margin: 4px 0; }
+@media (prefers-reduced-motion: reduce) { .tapas i { transition: none; } }
+</style></head>
+<body>
+<div class="k-imprimir-nombre"><span>Nombre</span><span>Fecha</span></div>
+<main class="k-escena">
+  <header class="k-cabecera">
+    <div><h1 class="k-titulo">El mapa del tesoro</h1><p class="k-consigna" id="consigna">Cada acierto destapa un trozo del mapa.</p></div>
+    <div class="k-progreso" id="progreso" aria-label="Progreso"></div>
+  </header>
+  <section class="k-centro">
+    <div class="juego">
+      <div class="izq">
+        <p class="nivel" id="nivel"></p>
+        <p class="op" id="op" aria-live="polite"></p>
+        <div class="k-opciones" id="opciones" role="group" aria-label="Respuestas"></div>
+      </div>
+      <div class="mapa" aria-label="Mapa del tesoro">
+        <svg viewBox="0 0 300 300" aria-hidden="true">
+          <rect width="300" height="300" fill="var(--superficie)"/>
+          <path d="M60,70 Q120,30 190,55 Q260,70 250,140 Q262,215 190,240 Q120,268 70,225 Q30,180 45,130 Q40,95 60,70 Z" fill="var(--fondo)" stroke="var(--texto)" stroke-width="4"/>
+          <path d="M75,210 Q110,190 120,160 Q130,120 170,120 Q205,118 215,90" fill="none" stroke="var(--texto)" stroke-width="4" stroke-dasharray="4 10" stroke-linecap="round"/>
+          <path d="M70,100 l14,-28 l14,28 Z M84,72 v-14" fill="none" stroke="var(--texto)" stroke-width="4" stroke-linejoin="round"/>
+          <circle cx="175" cy="200" r="16" fill="none" stroke="var(--texto)" stroke-width="4"/>
+          <path d="M203,78 l24,24 M227,78 l-24,24" stroke="var(--acento)" stroke-width="8" stroke-linecap="round"/>
+          <text x="232" y="272" font-size="34" fill="var(--texto)">N ↑</text>
+        </svg>
+        <div class="tapas" id="tapas"></div>
+      </div>
+    </div>
+  </section>
+  <footer class="k-pie">
+    <button class="k-btn" type="button" id="anterior">← Anterior</button>
+    <button class="k-btn k-principal" type="button" id="comprobar">Comprobar</button>
+    <button class="k-btn" type="button" id="siguiente">Siguiente →</button>
+  </footer>
+  <aside class="k-tarjeta" data-profe id="profe">
+    <p>Respuesta: <span class="k-solucion" id="solucion"></span></p>
+    <p id="nota"></p>
+  </aside>
+</main>
+<script>// Families' code: on the public site, hints and answers wait for a grown-up's code, so a child alone
+// can't just reveal them. Her own copy, opened from her Mac, never asks. Only the hash is here.
+const ClaveFamilias = (() => {
+  const HASH = "6e63e187b24540db3a4df7451f85581ec3ea9a3fa72a4200b77890e9eff06a33";
+  const local = location.protocol === "file:";
+  const marca = "clave-familias";
+  const ok = () => { try { return sessionStorage.getItem(marca) === HASH; } catch (e) { return false; } };
+  /** @param {string} t */
+  async function huella(t) {
+    if (!crypto.subtle) return "";
+    const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(t.trim().toLowerCase().replace(/\s+/g, "")));
+    return Array.from(new Uint8Array(b), x => x.toString(16).padStart(2, "0")).join("");
+  }
+  /** Run fn now if allowed; otherwise ask for the code first. @param {() => void} fn @param {() => void} [si_no] */
+  function pedir(fn, si_no) {
+    if (local || ok()) { fn(); return; }
+    const d = document.createElement("dialog");
+    d.setAttribute("aria-label", "Código de las familias");
+    d.style.cssText = "border:3px solid #2a1f2d;border-radius:18px;padding:1.5rem;max-width:22rem;font:20px/1.4 ui-rounded,'Avenir Next',system-ui,sans-serif;color:#2a1f2d;background:#fffdf8";
+    d.innerHTML = '<form method="dialog" style="display:grid;gap:.8rem">' +
+      '<strong style="font-size:1.2em">🔒 Esto es para hacerlo con un adulto</strong>' +
+      '<label>Escribe el código de las familias<input type="password" autocomplete="off" style="display:block;width:100%;box-sizing:border-box;margin-top:.4rem;font:inherit;padding:.5rem .7rem;border:2px solid #2a1f2d;border-radius:10px"></label>' +
+      '<span class="cf-msg" aria-live="polite" style="min-height:1.4em;color:#9b2f66"></span>' +
+      '<span style="display:flex;gap:.6rem;justify-content:flex-end">' +
+      '<button value="no" type="submit" style="font:inherit;padding:.5rem 1rem;border-radius:10px;border:2px solid #2a1f2d;background:#fff">Cancelar</button>' +
+      '<button value="si" type="submit" style="font:inherit;padding:.5rem 1rem;border-radius:10px;border:2px solid #2a1f2d;background:#2a1f2d;color:#fff">Entrar</button></span></form>';
+    const input = /** @type {HTMLInputElement} */ (d.querySelector("input"));
+    const msg = /** @type {HTMLElement} */ (d.querySelector(".cf-msg"));
+    d.querySelector("form")?.addEventListener("submit", async e => {
+      const b = /** @type {HTMLButtonElement|null} */ (/** @type {SubmitEvent} */ (e).submitter);
+      if (b && b.value === "no") return;
+      e.preventDefault();
+      if (await huella(input.value) === HASH) {
+        try { sessionStorage.setItem(marca, HASH); } catch (_) { /* storage off: ask again next time */ }
+        d.close("si"); fn();
+      } else { msg.textContent = "Ese no es. Pídeselo a un adulto de casa."; input.select(); }
+    });
+    d.addEventListener("close", () => { if (d.returnValue !== "si" && si_no) si_no(); d.remove(); });
+    document.body.append(d); d.showModal(); input.focus();
+  }
+  return { pedir, abierta: () => local || ok() };
+})();
+</script>
+<script>// @ts-check
+// Kit for children's pages: feedback, sound, keyboard, tap-then-tap, full screen, teacher view.
+// Needs ClaveFamilias (.claude/shared/clave-familias.js) inlined before it: answers and hints wait for the families' code online.
+"use strict";
+const Kit = (() => {
+  const esProfe = location.hash === "#profe";
+  const clave = "kit:" + location.pathname;
+  let sonido = false, ctx = /** @type {AudioContext|null} */ (null), aviso = /** @type {HTMLElement|null} */ (null);
+  const teclas = /** @type {Record<string, () => void>} */ ({});
+
+  /** @param {number} f @param {number} t */
+  function nota(f, t) {
+    if (!sonido) return;
+    ctx = ctx || new AudioContext();
+    const o = ctx.createOscillator(), g = ctx.createGain(), t0 = ctx.currentTime + t;
+    o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.05, t0 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.3); o.start(t0); o.stop(t0 + 0.32);
+  }
+  /** @param {string} texto @param {"k-bien"|"k-casi"} tipo */
+  function avisar(texto, tipo) {
+    if (!aviso) { aviso = document.createElement("div"); aviso.className = "k-aviso"; aviso.setAttribute("role", "status"); document.body.append(aviso); }
+    aviso.className = "k-aviso " + tipo; aviso.textContent = texto;
+    requestAnimationFrame(() => aviso && aviso.classList.add("k-ver"));
+    clearTimeout(/** @type {any} */ (avisar).t);
+    /** @type {any} */ (avisar).t = setTimeout(() => aviso && aviso.classList.remove("k-ver"), 1800);
+  }
+  function celebrar() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const c = document.createElement("div"); c.className = "k-confeti";
+    const m = getComputedStyle(document.documentElement).getPropertyValue("--motivo").replace(/"/g, "").trim() || "✿";
+    for (let i = 0; i < 14; i++) {
+      const s = document.createElement("span"); s.textContent = i % 3 ? m : "⭐";
+      s.style.left = (5 + Math.random() * 90) + "vw"; s.style.animationDelay = (Math.random() * 0.3) + "s";
+      c.append(s);
+    }
+    document.body.append(c); setTimeout(() => c.remove(), 1600);
+  }
+
+  const api = {
+    esProfe,
+    /** @template T @param {T[]} a @returns {T[]} */
+    barajar(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; },
+    /** @param {string} [msg] */
+    bien(msg = "¡Muy bien!") { avisar("✓ " + msg, "k-bien"); nota(784, 0); nota(1046.5, 0.09); celebrar(); },
+    /** @param {string} [msg] */
+    casi(msg = "¡Casi! Prueba otra vez") { avisar("↻ " + msg, "k-casi"); nota(523.25, 0); },
+    /** Register page shortcuts, e.g. {"1": ..., "ArrowRight": ..., " ": ...} @param {Record<string, () => void>} mapa */
+    teclas(mapa) { Object.assign(teclas, mapa); },
+    /** Tap-then-tap: click a «pieza», then a «destino». @param {string} piezas @param {string} destinos @param {(p: Element, d: Element) => void} soltar */
+    tocar(piezas, destinos, soltar) {
+      let elegida = /** @type {Element|null} */ (null);
+      document.addEventListener("click", e => {
+        const t = /** @type {Element} */ (e.target);
+        const p = t.closest(piezas), d = t.closest(destinos);
+        if (p) { if (elegida) elegida.classList.remove("k-sel"); elegida = p; p.classList.add("k-sel"); return; }
+        if (d && elegida) { elegida.classList.remove("k-sel"); soltar(elegida, d); elegida = null; }
+      });
+    },
+    profe: {
+      /** Children's tab: share the state with the teacher tab. @param {any} estado */
+      publicar(estado) { try { localStorage.setItem(clave, JSON.stringify({ estado, t: Date.now() })); } catch (e) { /* storage off */ } },
+      /** Teacher tab: react to the children's tab. @param {(estado: any) => void} fn */
+      escuchar(fn) {
+        addEventListener("storage", e => { if (e.key === clave && e.newValue) fn(JSON.parse(e.newValue).estado); });
+        try { const v = localStorage.getItem(clave); if (v) fn(JSON.parse(v).estado); } catch (e) { /* storage off */ }
+      },
+      abrir() { ClaveFamilias.pedir(() => window.open(location.pathname + location.search + "#profe", "_blank")); },
+    },
+    /** Run a hint or reveal-the-answer action; online it asks for the families' code first. @param {() => void} fn */
+    conClave(fn) { ClaveFamilias.pedir(fn); },
+    pantallaCompleta() { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); },
+  };
+
+  function herramientas() {
+    const h = document.createElement("div"); h.className = "k-herramientas";
+    h.innerHTML = '<button class="k-btn k-pequeno" type="button" data-k="sonido" aria-pressed="false">🔈 Sonido</button>' +
+      '<button class="k-btn k-pequeno" type="button" data-k="completa">⛶ Pantalla completa</button>' +
+      (esProfe ? "" : '<button class="k-btn k-pequeno" type="button" data-k="profe" title="Abre la vista profe en otra pestaña (P)">👩‍🏫</button>');
+    h.addEventListener("click", e => {
+      const b = /** @type {HTMLElement} */ (e.target).closest("button"); if (!b) return;
+      if (b.dataset.k === "sonido") { sonido = !sonido; b.setAttribute("aria-pressed", String(sonido)); b.textContent = sonido ? "🔊 Sonido" : "🔈 Sonido"; if (sonido) nota(880, 0); }
+      if (b.dataset.k === "completa") api.pantallaCompleta();
+      if (b.dataset.k === "profe") api.profe.abrir();
+    });
+    document.body.append(h);
+  }
+
+  addEventListener("keydown", e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const t = /** @type {HTMLElement} */ (e.target);
+    if (t.matches("input, textarea, [contenteditable]")) return;
+    const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (teclas[k]) { e.preventDefault(); teclas[k](); return; }
+    if (k === "f") api.pantallaCompleta();
+    else if (k === "p" && !esProfe) api.profe.abrir();
+  });
+  addEventListener("DOMContentLoaded", () => {
+    herramientas();
+    if (!esProfe) return;
+    // A teacher-view link opened directly online stays hidden until the code is given.
+    if (ClaveFamilias.abierta()) { document.body.classList.add("k-profe"); return; }
+    document.body.style.visibility = "hidden";
+    ClaveFamilias.pedir(() => { document.body.style.visibility = ""; document.body.classList.add("k-profe"); },
+      () => { location.replace(location.pathname + location.search); });
+  });
+  return api;
+})();
+</script>
+<script>"use strict";
+
+// [a, b, nivel] — 🌱 sin llevar · 🌿 llevando · 🌳 más grandes
+const OPS = [[21,13,"🌱"],[32,12,"🌱"],[14,21,"🌱"],[26,13,"🌿"],[34,15,"🌿"],[27,24,"🌿"],[45,32,"🌳"],[56,43,"🌳"],[68,27,"🌳"]];
+const PREGUNTAS = OPS.map(([a, b, n]) => {
+  const u = b % 10, d = b - u, pu = a * u, pd = a * d, ok = pu + pd;
+  const malas = [pu + pd / 10, ok + 10, ok > 200 ? ok - 100 : ok + 100].filter((v, k, s) => v !== ok && s.indexOf(v) === k);
+  const op = Kit.barajar([ok, ...malas]).slice(0, 4);
+  return { a, b, n, op, ok: op.indexOf(ok), nota: `${a} × ${u} = ${pu} · ${a} × ${d} = ${pd} · ${pu} + ${pd} = ${ok}. Si eligen ${pu + pd / 10}, se han olvidado del cero de las decenas.` };
+});
+let i = 0, elegida = -1;
+const hechos = new Set();
+const $ = s => document.querySelector(s);
+const NIVEL = { "🌱": "🌱 Calentamiento", "🌿": "🌿 Llevando", "🌳": "🌳 Desafío" };
+
+function pintar() {
+  const p = PREGUNTAS[i];
+  $("#nivel").textContent = NIVEL[p.n];
+  $("#op").textContent = `${p.a} × ${p.b} = ?`;
+  $("#opciones").innerHTML = p.op.map((t, k) =>
+    `<button class="k-opcion" type="button" data-k="${k}" aria-pressed="false"><span class="k-num">${k + 1}</span>${t}</button>`).join("");
+  $("#progreso").innerHTML = PREGUNTAS.map((_, k) => `<i class="${hechos.has(k) ? "k-hecho" : k === i ? "k-ahora" : ""}"></i>`).join("");
+  $("#tapas").innerHTML = PREGUNTAS.map((_, k) => `<i class="${hechos.has(k) ? "fuera" : ""}">${k + 1}</i>`).join("");
+  $("#solucion").textContent = p.op[p.ok];
+  $("#nota").textContent = p.nota;
+  elegida = -1;
+}
+function elegir(k) {
+  elegida = k;
+  document.querySelectorAll(".k-opcion").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.k === k)));
+}
+function comprobar() {
+  if (elegida < 0) return Kit.casi("Elige una respuesta");
+  const b = document.querySelector(`.k-opcion[data-k="${elegida}"]`);
+  if (elegida === PREGUNTAS[i].ok) {
+    b.classList.add("k-ok"); hechos.add(i);
+    document.querySelectorAll("#tapas i")[i].classList.add("fuera");
+    Kit.bien(hechos.size === PREGUNTAS.length ? "¡Tesoro encontrado!" : "¡Muy bien! Un trozo más del mapa");
+    Kit.profe.publicar({ i, hechos: [...hechos] });
+  } else { b.classList.add("k-otra"); Kit.casi("¡Casi! Primero por las unidades, luego por las decenas"); }
+}
+function ir(n, avisar = true) {
+  i = Math.max(0, Math.min(PREGUNTAS.length - 1, n)); pintar();
+  if (avisar) Kit.profe.publicar({ i, hechos: [...hechos] });
+}
+$("#opciones").addEventListener("click", e => { const b = e.target.closest(".k-opcion"); if (b) elegir(+b.dataset.k); });
+$("#comprobar").addEventListener("click", comprobar);
+$("#siguiente").addEventListener("click", () => ir(i + 1));
+$("#anterior").addEventListener("click", () => ir(i - 1));
+Kit.teclas({ "1": () => elegir(0), "2": () => elegir(1), "3": () => elegir(2), "4": () => elegir(3),
+  " ": comprobar, "ArrowRight": () => ir(i + 1), "ArrowLeft": () => ir(i - 1), "r": () => { hechos.clear(); ir(0); } });
+Kit.profe.escuchar(e => {
+  if (Array.isArray(e.hechos)) { hechos.clear(); e.hechos.forEach(k => hechos.add(k)); }
+  if (typeof e.i === "number") { i = e.i; pintar(); }
+});
+pintar();
+</script>
+</body></html>
