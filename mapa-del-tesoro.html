@@ -176,6 +176,7 @@ body.k-profe .k-herramientas { top: 46px; }
     <button class="k-btn" type="button" id="anterior">← Anterior</button>
     <button class="k-btn k-principal" type="button" id="comprobar">Comprobar</button>
     <button class="k-btn" type="button" id="siguiente">Siguiente →</button>
+    <button class="k-btn k-pequeno" type="button" id="reiniciar" title="Tapa otra vez todo el mapa (R)">↺ Empezar de nuevo</button>
   </footer>
   <aside class="k-tarjeta" data-profe id="profe">
     <p>Respuesta: <span class="k-solucion" id="solucion"></span></p>
@@ -383,6 +384,7 @@ $("#opciones").addEventListener("click", e => { const b = e.target.closest(".k-o
 $("#comprobar").addEventListener("click", comprobar);
 $("#siguiente").addEventListener("click", () => ir(i + 1));
 $("#anterior").addEventListener("click", () => ir(i - 1));
+$("#reiniciar").addEventListener("click", () => { hechos.clear(); ir(0); });
 Kit.teclas({ "1": () => elegir(0), "2": () => elegir(1), "3": () => elegir(2), "4": () => elegir(3),
   " ": comprobar, "ArrowRight": () => ir(i + 1), "ArrowLeft": () => ir(i - 1), "r": () => { hechos.clear(); ir(0); } });
 Kit.profe.escuchar(e => {
