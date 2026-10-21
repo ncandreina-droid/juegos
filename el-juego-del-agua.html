@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>El juego del agua</title>
+<!-- Playwrite (letra escolar de España). Si no hay internet, se usa una letra parecida del ordenador. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playwrite+ES:wght@100..400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #2f2a4a;
+  --coral: #ff7a59;
+  --sun: #ffd166;
+  --mint: #7fd1ae;
+  --sky: #74c0fc;
+  --paper: #fffdf7;
+  --ok: #2f9e6e;
+  --retry: #f08c00;
+  --text: "Playwrite ES", "Playwrite España", "Chalkboard SE", "Comic Sans MS", cursive;
+}
+* { box-sizing: border-box; }
+body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--text); font-weight: 400; font-size: clamp(15px, 1.5vw, 22px); line-height: 1.9;
+  background: #e7f5ff radial-gradient(circle, #c5e4ff 2px, transparent 2.5px) 0 0 / 34px 34px; }
+header { background: var(--ink); color: #fff; padding: .4em 1.2em .6em; box-shadow: 0 4px 0 var(--sky); }
+.top { display: flex; justify-content: space-between; align-items: center; gap: 1em; flex-wrap: wrap; }
+h1 { margin: 0; font-size: 1.3em; font-weight: 400; }
+#total { font-size: 1em; }
+nav { display: flex; flex-wrap: wrap; gap: .4em; margin-top: .3em; }
+button { font-family: var(--text); font-size: .9em; line-height: 1.7; cursor: pointer; border: 0; border-radius: 999px; padding: .25em 1.1em; background: var(--sun); color: var(--ink); box-shadow: 0 .2em 0 rgba(0,0,0,.18); transition: transform .08s; }
+button:hover { transform: translateY(-2px); }
+button:active { transform: translateY(2px); box-shadow: none; }
+button:disabled { cursor: default; transform: none; }
+nav button { background: #fff; }
+nav button.on { background: var(--coral); color: #fff; }
+
+main { max-width: 900px; margin: 0 auto; padding: 1.2em 1em 3em; }
+.stage { background: var(--paper); border: .18em solid var(--ink); border-radius: 1.4em; padding: 1em 1.4em 1.6em; text-align: center; box-shadow: 0 .4em 0 rgba(47,42,74,.12); }
+.stage h2 { margin: 0; font-size: 1.4em; font-weight: 400; color: var(--coral); }
+.prog { height: .7em; background: #e9ecef; border-radius: 999px; overflow: hidden; margin: .5em auto; max-width: 20em; }
+.prog i { display: block; height: 100%; width: 0; background: var(--mint); transition: width .3s; }
+.emo { font-size: 4.5em; line-height: 1.3; }
+.que { font-size: 1.2em; margin: 0 0 .6em; }
+.ops { display: flex; flex-wrap: wrap; gap: .7em; justify-content: center; }
+.ops button { font-size: 1em; background: #fff; border: .14em solid var(--ink); padding: .3em 1.3em; max-width: 100%; }
+.ops button.ok { background: #d3f9d8; border-color: var(--ok); color: var(--ok); }
+.ops button.no { background: #fff0d6; border-color: var(--retry); color: var(--retry); opacity: .7; }
+.fb { min-height: 4em; margin: .6em 0 .2em; }
+.sig { background: var(--mint); font-size: 1em; }
+.fin .emo { font-size: 5.5em; }
+.estrellas { font-size: 1.6em; letter-spacing: .1em; line-height: 1.4; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="top">
+    <h1>💧 El juego del agua</h1>
+    <span id="total">⭐ 0</span>
+  </div>
+  <nav id="nav"></nav>
+</header>
+
+<main><div class="stage" id="stage"></div></main>
+
+<script>
+// Each item: [emoji, text, index of the right option, short explanation]
+const juegos = [
+  { t: '🧊 Estados', h: '¿Sólido, líquido o gas?', ops: ['🧊 Sólido', '💧 Líquido', '☁️ Gas'], items: [
+    ['🧊', 'Un cubito de hielo', 0, 'Tiene su propia forma.'],
+    ['🧃', 'El zumo', 1, 'Toma la forma del vaso.'],
+    ['♨️', 'El vapor de la sopa caliente', 2, 'Se escapa por el aire.'],
+    ['🪨', 'Una piedra', 0, 'No cambia de forma.'],
+    ['🌧️', 'La lluvia', 1, 'Son gotas de agua líquida.'],
+    ['🎈', 'El aire de un globo', 2, 'Llena todo el globo.'],
+    ['✏️', 'Un lápiz', 0, 'Tiene su propia forma.'],
+    ['🥛', 'La leche', 1, 'Toma la forma del vaso.'] ] },
+  { t: '💡 Preguntas', h: 'Elige la respuesta', items: [
+    ['🧊', 'Cuando el hielo se calienta…', 2, 'Pasa de sólido a líquido.', ['se vuelve piedra', 'desaparece para siempre', 'se derrite']],
+    ['❄️', 'Si meto agua en el congelador…', 1, 'Pasa de líquido a sólido.', ['se evapora', 'se congela', 'se vuelve aceite']],
+    ['☀️', 'Un charco desaparece al sol porque el agua…', 1, 'Pasa de líquido a gas: vapor.', ['se esconde debajo del suelo', 'se evapora', 'se congela']],
+    ['♨️', 'El vapor de agua es…', 1, 'Es agua en forma de gas.', ['un sólido', 'un gas', 'un líquido']],
+    ['🥄', 'Si echo el aliento a una cuchara fría, aparecen…', 0, 'El vapor se enfría y se vuelve líquido: se condensa.', ['gotitas de agua', 'chispas', 'burbujas de jabón']],
+    ['🦟', '¿Por qué el zapatero camina sobre el agua?', 1, 'El agua tiene una «piel» invisible.', ['Porque sabe nadar', 'Por la tensión superficial', 'Porque el agua está dura']],
+    ['🧼', 'En el plato con pimienta, el jabón…', 1, 'Por eso la pimienta se escapa.', ['pinta el agua', 'rompe la «piel» del agua', 'congela el agua']],
+    ['💧', 'Una gota de agua se queda redondita sobre la mesa por…', 0, 'Su «piel» la mantiene juntita.', ['la tensión superficial', 'el frío', 'el viento']],
+    ['🧻', 'Si meto la punta del papel de cocina en agua, el agua…', 2, 'Sube sola por caminos muy finitos: es la capilaridad.', ['se queda quieta abajo', 'se convierte en hielo', 'sube por el papel y se lleva el color']],
+    ['🌷', '¿Cómo sube el agua por el tallo de una planta?', 0, 'Sube sola por caminos muy finitos.', ['Por capilaridad', 'La empuja el viento', 'La planta sopla']] ] }
+];
+
+const $ = s => document.querySelector(s);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const baraja = a => { for (let k = a.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [a[k], a[j]] = [a[j], a[k]]; } return a; };
+const stage = $('#stage'), nav = $('#nav'), total = $('#total');
+let gi = 0;
+
+// Longest run of questions in a row that share the same right answer.
+const racha = a => { let max = 1, c = 1; for (let k = 1; k < a.length; k++) { c = a[k][2] === a[k - 1][2] ? c + 1 : 1; if (c > max) max = c; } return max; };
+// Shuffle so the answers alternate: never the same twice in a row with three options, at most twice with two.
+function mezcla(g) {
+  const tope = (g.ops || []).length >= 3 ? 1 : 2;
+  let mejor = null;
+  for (let n = 0; n < 400; n++) {
+    const o = baraja(g.items.slice());
+    if (!mejor || racha(o) < racha(mejor)) mejor = o;
+    if (racha(mejor) <= tope) break;
+  }
+  return mejor;
+}
+function empieza(g) { g.orden = mezcla(g); g.i = 0; g.stars = 0; g.hecho = false; }
+juegos.forEach((g, k) => {
+  empieza(g);
+  const b = el('button', '', g.t); b.onclick = () => { gi = k; pinta(); }; nav.appendChild(b);
+});
+function cuenta() { total.textContent = '⭐ ' + juegos.reduce((s, g) => s + g.stars, 0); }
+
+function pinta() {
+  const g = juegos[gi];
+  [...nav.children].forEach((b, k) => b.classList.toggle('on', k === gi));
+  stage.innerHTML = ''; stage.className = 'stage';
+  cuenta();
+  if (g.i >= g.orden.length) return fin(g);
+
+  const [emo, texto, bien, porque, opsItem] = g.orden[g.i];
+  const ops = opsItem || g.ops;
+  let primer = true;
+  stage.appendChild(el('h2', '', g.h));
+  const prog = el('div', 'prog'), bar = el('i'); bar.style.width = (g.i / g.orden.length * 100) + '%'; prog.appendChild(bar); stage.appendChild(prog);
+  stage.appendChild(el('div', 'emo', emo));
+  stage.appendChild(el('p', 'que', texto));
+  const caja = el('div', 'ops'), fb = el('p', 'fb'), sig = el('button', 'sig', 'Siguiente ▶');
+  sig.style.visibility = 'hidden';
+  sig.onclick = () => { g.i++; pinta(); };
+  ops.forEach((txt, k) => {
+    const b = el('button', '', txt);
+    b.onclick = () => {
+      if (k === bien) {
+        b.classList.add('ok');
+        [...caja.children].forEach(x => x.disabled = true);
+        if (primer) { g.stars++; cuenta(); }
+        fb.textContent = (primer ? '⭐ ¡Muy bien! ' : '👍 ¡Ahora sí! ') + porque;
+        sig.style.visibility = 'visible'; sig.focus();
+      } else {
+        primer = false; b.classList.add('no'); b.disabled = true;
+        fb.textContent = '🤔 Casi… ¡prueba otra vez!';
+      }
+    };
+    caja.appendChild(b);
+  });
+  stage.append(caja, fb, sig);
+}
+
+function fin(g) {
+  g.hecho = true;
+  stage.classList.add('fin');
+  const todos = juegos.every(x => x.hecho);
+  const suma = juegos.reduce((s, x) => s + x.stars, 0), max = juegos.reduce((s, x) => s + x.items.length, 0);
+  if (todos) {
+    stage.appendChild(el('div', 'emo', '🏅'));
+    stage.appendChild(el('h2', '', '¡Ya eres experto en el agua!'));
+    stage.appendChild(el('p', 'que', 'Has conseguido ' + suma + ' estrellas de ' + max + '.'));
+  } else {
+    stage.appendChild(el('div', 'emo', '🎉'));
+    stage.appendChild(el('h2', '', '¡Juego terminado!'));
+    stage.appendChild(el('p', 'que', 'Has conseguido ' + g.stars + ' estrellas de ' + g.items.length + '.'));
+  }
+  stage.appendChild(el('p', 'estrellas', '⭐'.repeat(todos ? Math.min(suma, 31) : g.stars)));
+  const caja = el('div', 'ops');
+  const otra = el('button', '', '🔁 Jugar otra vez'); otra.onclick = () => { empieza(g); pinta(); };
+  caja.appendChild(otra);
+  const falta = juegos.findIndex(x => !x.hecho);
+  if (falta >= 0) { const b = el('button', 'sig', 'Siguiente juego ▶'); b.onclick = () => { gi = falta; pinta(); }; caja.appendChild(b); }
+  stage.appendChild(caja);
+}
+
+pinta();
+</script>
+</body>
+</html>
