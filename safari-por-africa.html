@@ -1,0 +1,576 @@
+<title>Safari por África</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Atkinson+Hyperlegible:wght@400;700&family=Playwrite+ES:wght@300;400&family=Playwrite+ES+Deco:wght@300;400&family=Sniglet:wght@800&display=swap">
+<style>
+  /* Deliberately single-theme: a notebook page, same look on any host theme. */
+  :root {
+    color-scheme: light;
+    --papel: #fdfcf7;
+    --cuadricula: #dfe9f3;
+    --margen: #e0787b;
+    --tinta: #253041;
+    --tinta-suave: #5d6a7e;
+    --carta: #ffffff;
+    --borde: #c9d3df;
+    --azul: #2c68ad;
+    --azul-hover: #24578f;
+    --estrella: #f3b92f;
+    --bien: #23865a;
+    --bien-fondo: #e3f4ea;
+    --casi: #b8641c;
+    --casi-fondo: #fdf0e1;
+    --profe: #fff8dc;
+    /* Montessori grammar symbols */
+    --s-n: #1b1b1b; --s-art: #7fb8e6; --s-adj: #1f3b8c; --s-pron: #7b3fa0;
+    --s-v: #d32f2f; --s-adv: #f28c28; --s-prep: #2e8b57; --s-conj: #f28fb0;
+    --display: "Sniglet", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+    --texto: "Andika", "Century Gothic", "Trebuchet MS", sans-serif;
+  }
+  body {
+    background-color: var(--papel);
+    background-image:
+      linear-gradient(var(--cuadricula) 1px, transparent 1px),
+      linear-gradient(90deg, var(--cuadricula) 1px, transparent 1px);
+    background-size: 26px 26px;
+    color: var(--tinta);
+    font-family: var(--texto);
+    font-size: 18px;
+    line-height: 1.5;
+    padding-inline: 16px;
+    padding-block: 16px 40px;
+  }
+  .hoja { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  h1 { font-family: var(--display); font-weight: 800; font-size: clamp(26px, 5vw, 38px); line-height: 1.1; margin: 0; text-wrap: balance; }
+  .nivel { font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: var(--tinta-suave); }
+  .estrellas { font-family: var(--display); font-size: 26px; display: flex; align-items: center; gap: 6px; background: var(--carta); border: 2px solid var(--borde); border-radius: 999px; padding: 4px 16px; font-variant-numeric: tabular-nums; }
+  .estrellas .icono { color: var(--estrella); }
+  .estrellas.salta { animation: salta .5s; }
+
+  .puntos { display: flex; flex-wrap: wrap; gap: 8px; }
+  .punto { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--borde); background: var(--carta); font: 700 15px var(--texto); color: var(--tinta-suave); cursor: pointer; }
+  .punto.hecho { background: var(--estrella); border-color: var(--estrella); color: var(--tinta); }
+  .punto.actual { border-color: var(--azul); color: var(--azul); box-shadow: 0 0 0 3px #2c68ad33; }
+  .punto.hecho.actual { color: var(--tinta); }
+
+  .ejercicio { background: var(--carta); border: 2px solid var(--borde); border-radius: 18px; padding: clamp(16px, 4vw, 32px); display: flex; flex-direction: column; gap: 20px; }
+  .enunciado { display: flex; align-items: center; gap: 16px; }
+  .emoji { font-size: clamp(48px, 10vw, 72px); line-height: 1; }
+  .enunciado h2 { font-family: var(--display); font-weight: 800; font-size: clamp(22px, 4vw, 30px); line-height: 1.2; margin: 0; text-wrap: balance; }
+  .turno { font-size: 16px; color: var(--azul); font-weight: 700; }
+
+  .loca { font-size: clamp(22px, 4vw, 28px); background: var(--casi-fondo); border-radius: 14px; padding: 12px 18px; align-self: flex-start; position: relative; }
+  .loca::before { content: "🤪 "; }
+
+  /* The ruled line where the sentence is built */
+  .renglon { min-height: 96px; border-radius: 10px; background: linear-gradient(transparent calc(100% - 22px), #b9cde2 calc(100% - 22px), #b9cde2 calc(100% - 20px), transparent calc(100% - 20px)), var(--papel); border-left: 3px solid var(--margen); padding: 14px 14px 26px 18px; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px; }
+  .renglon:empty::before { content: "Toca las palabras para ponerlas aquí"; color: var(--tinta-suave); font-size: 17px; align-self: center; }
+  .renglon.bien { background-color: var(--bien-fondo); border-left-color: var(--bien); }
+  .renglon.temblor { animation: temblor .4s; }
+
+  .monton { display: flex; flex-wrap: wrap; gap: 10px; min-height: 64px; }
+
+  .carta { font: 700 clamp(22px, 4.2vw, 30px) var(--texto); color: var(--tinta); background: var(--carta); border: 2px solid var(--tinta); border-radius: 12px; padding: 6px 16px 8px; min-width: 48px; cursor: pointer; display: inline-flex; flex-direction: column; align-items: center; gap: 4px; box-shadow: 0 3px 0 var(--tinta); transition: transform .08s; }
+  .carta:hover { transform: translateY(-2px); }
+  .carta:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--tinta); }
+  .carta.signo { color: var(--margen); min-width: 44px; padding-inline: 12px; }
+  .renglon .carta { box-shadow: none; }
+  .renglon.bien .carta { border-color: var(--bien); cursor: default; }
+  .renglon.bien .carta:hover { transform: none; }
+
+  /* Kids' font, chosen from the «Letra» menu. Only what the kids read changes; buttons and teacher notes stay in Andika. */
+  .hoja { --f-ninos: var(--texto); }
+  .hoja[data-letra="ligada"] { --f-ninos: "Playwrite ES", "Segoe Script", "Apple Chancery", cursive; }
+  .hoja[data-letra="ligada-deco"] { --f-ninos: "Playwrite ES Deco", "Playwrite ES", "Segoe Script", cursive; }
+  .hoja[data-letra="legible"] { --f-ninos: "Atkinson Hyperlegible", "Verdana", sans-serif; }
+  .carta, .opcion .frase, .loca, .frase-final, .enunciado h2 { font-family: var(--f-ninos); }
+  .hoja[data-letra="mayusculas"] :is(.carta, .opcion .frase, .loca, .frase-final, .enunciado h2) { text-transform: uppercase; letter-spacing: .03em; }
+  /* Playwrite has no bold and runs wide and tall */
+  .cursiva :is(.carta, .opcion .frase, .loca, .frase-final, .enunciado h2) { font-weight: 400; }
+  .cursiva .carta { font-size: clamp(19px, 3.6vw, 26px); line-height: 1.8; padding: 2px 14px 4px; }
+  .cursiva .carta.signo { font-family: var(--texto); font-weight: 700; }
+  .cursiva .opcion .frase { font-size: clamp(18px, 3.4vw, 23px); line-height: 1.9; }
+  .cursiva .loca { font-size: clamp(19px, 3.6vw, 24px); line-height: 1.9; }
+  .cursiva .enunciado h2 { font-size: clamp(18px, 3.4vw, 24px); line-height: 1.7; }
+  .cursiva .frase-final { font-size: clamp(22px, 4.4vw, 30px); line-height: 1.8; }
+
+  .menu-letra { font: 400 15px var(--texto); color: var(--tinta-suave); display: inline-flex; align-items: center; gap: 8px; }
+  .menu-letra select { font: 700 15px var(--texto); color: var(--tinta); background: var(--carta); border: 2px solid var(--borde); border-radius: 999px; padding: 6px 12px; cursor: pointer; }
+  .menu-letra select:focus-visible { outline: 3px solid var(--azul); outline-offset: 3px; }
+
+  .simbolo { display: none; height: 16px; }
+  .con-simbolos .simbolo { display: block; }
+  .simbolo::before { content: ""; display: block; margin: 0 auto; }
+  .s-n::before { width: 22px; height: 16px; background: var(--s-n); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  .s-art::before { width: 12px; height: 10px; margin-top: 6px; background: var(--s-art); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  .s-adj::before { width: 16px; height: 13px; margin-top: 3px; background: var(--s-adj); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  .s-pron::before { width: 14px; height: 16px; background: var(--s-pron); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+  .s-v::before { width: 16px; height: 16px; border-radius: 50%; background: var(--s-v); }
+  .s-adv::before, .s-int::before { width: 10px; height: 10px; margin-top: 3px; border-radius: 50%; background: var(--s-adv); }
+  .s-prep::before { width: 20px; height: 10px; margin-top: 3px; border-radius: 0 0 20px 20px; background: var(--s-prep); }
+  .s-conj::before { width: 20px; height: 5px; margin-top: 6px; border-radius: 3px; background: var(--s-conj); }
+
+  .opciones { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  .opcion { font: 700 clamp(21px, 4vw, 27px) var(--texto); color: var(--tinta); text-align: left; background: var(--papel); border: 2px solid var(--borde); border-radius: 14px; padding: 16px 18px; cursor: pointer; display: flex; gap: 12px; align-items: baseline; }
+  .opcion:hover { border-color: var(--azul); }
+  .opcion .letra { font-family: var(--display); color: var(--azul); }
+  .opcion.bien { background: var(--bien-fondo); border-color: var(--bien); }
+  .opcion.mal { background: var(--casi-fondo); border-color: var(--casi); opacity: .75; }
+
+  .acciones { display: flex; flex-wrap: wrap; gap: 12px; }
+  .boton { font: 700 19px var(--texto); border-radius: 12px; padding: 10px 22px; cursor: pointer; border: 2px solid var(--azul); background: var(--carta); color: var(--azul); }
+  .boton.principal { background: var(--azul); color: #fff; }
+  .boton.principal:hover { background: var(--azul-hover); }
+  .boton:disabled { opacity: .4; cursor: default; }
+  .acciones .siguiente { margin-left: auto; }
+
+  .aviso { font-size: 20px; border-radius: 12px; padding: 12px 16px; }
+  .aviso:empty { display: none; }
+  .aviso.bien { background: var(--bien-fondo); color: var(--bien); }
+  .aviso.casi { background: var(--casi-fondo); color: var(--casi); }
+  .aviso strong { font-family: var(--display); font-weight: 800; }
+
+  .frase-final { display: block; font: 700 clamp(26px, 5vw, 36px) var(--texto); text-align: center; padding: 8px; }
+
+  .profe { background: var(--profe); border: 2px dashed #d9c67a; border-radius: 14px; padding: 14px 18px; font-size: 16px; display: flex; flex-direction: column; gap: 8px; }
+  .profe h3 { margin: 0; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--tinta-suave); }
+  .profe p { margin: 0; }
+  .profe .acciones .boton { font-size: 16px; padding: 6px 14px; }
+
+  .pie { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; }
+  .interruptor { font: 400 15px var(--texto); background: var(--carta); color: var(--tinta-suave); border: 2px solid var(--borde); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .interruptor[aria-pressed="true"] { border-color: var(--tinta); color: var(--tinta); font-weight: 700; }
+
+  .final { text-align: center; align-items: center; }
+  .final .grande { font-family: var(--display); font-size: clamp(40px, 9vw, 64px); line-height: 1.1; }
+
+  button:focus-visible { outline: 3px solid var(--azul); outline-offset: 3px; }
+  @keyframes temblor { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-8px); } 75% { transform: translateX(8px); } }
+  @keyframes salta { 50% { transform: scale(1.25); } }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  @media (max-width: 520px) { .acciones .siguiente { margin-left: 0; } }
+</style>
+
+<div class="hoja" id="hoja">
+  <header>
+    <div>
+      <div class="nivel" id="nivel"></div>
+      <h1 id="titulo"></h1>
+    </div>
+    <div class="estrellas" id="estrellas" aria-live="polite"><span class="icono">★</span><span id="cuenta">0</span></div>
+  </header>
+  <nav class="puntos" id="puntos" aria-label="Ejercicios"></nav>
+  <main id="zona"></main>
+  <div class="pie">
+    <label class="menu-letra" for="sel-letra">Letra
+      <select id="sel-letra">
+        <option value="ligada">Ligada</option>
+        <option value="ligada-deco">Ligada con adornos</option>
+        <option value="imprenta">Imprenta</option>
+        <option value="mayusculas">Mayúsculas</option>
+        <option value="legible">Muy clara (dislexia)</option>
+      </select>
+    </label>
+    <button class="interruptor" id="btn-simbolos" type="button" aria-pressed="false">Símbolos</button>
+  </div>
+</div>
+
+<script id="datos" type="application/json">
+{
+ "titulo": "Safari por África",
+ "nivel": 5,
+ "ninos": [],
+ "simbolos": false,
+ "letra": "ligada",
+ "ejercicios": [
+  {
+   "tipo": "ordenar",
+   "emoji": "🦁",
+   "respuesta": "El león duerme por la tarde.",
+   "alternativas": [
+    "Por la tarde el león duerme.",
+    "Por la tarde duerme el león.",
+    "Duerme el león por la tarde."
+   ],
+   "roles": "art n v prep art n",
+   "pista": "¿Quién duerme? ¿Y cuándo?"
+  },
+  {
+   "tipo": "elegir",
+   "emoji": "🦓",
+   "opciones": [
+    "Ayer Lucía vio una cebra.",
+    "Lucía vio una ayer cebra."
+   ],
+   "correcta": 0,
+   "pista": "¿Dónde puede ir «ayer»: al principio, al final… o en medio de «una cebra»?",
+   "porque": "«Ayer» va al principio o al final, pero nunca separa «una» de «cebra»."
+  },
+  {
+   "tipo": "ordenar",
+   "emoji": "🦛",
+   "respuesta": "Pablo ve un hipopótamo por la tarde.",
+   "alternativas": [
+    "Por la tarde Pablo ve un hipopótamo."
+   ],
+   "roles": "n v art n prep art n",
+   "pista": "¿Quién ve? ¿Qué ve? ¿Cuándo?"
+  },
+  {
+   "tipo": "arreglar",
+   "emoji": "🐊",
+   "loca": "El río se baña en el cocodrilo.",
+   "respuesta": "El cocodrilo se baña en el río.",
+   "alternativas": [
+    "En el río se baña el cocodrilo."
+   ],
+   "roles": "art n pron v prep art n",
+   "pista": "¿Quién se puede bañar? ¿El río o el cocodrilo?"
+  },
+  {
+   "tipo": "ordenar",
+   "emoji": "🐘",
+   "respuesta": "Leo ve un elefante en el zoo.",
+   "alternativas": [
+    "En el zoo Leo ve un elefante."
+   ],
+   "roles": "n v art n prep art n",
+   "pista": "¿Quién ve? ¿Qué ve? ¿Dónde?"
+  },
+  {
+   "tipo": "elegir",
+   "emoji": "🐆",
+   "opciones": [
+    "Sara dibuja un por la mañana guepardo.",
+    "Por la mañana Sara dibuja un guepardo."
+   ],
+   "correcta": 1,
+   "pista": "¿«Por la mañana» puede meterse en medio de «un guepardo»?",
+   "porque": "«Por la mañana» va al principio o al final, nunca en medio de «un guepardo»."
+  },
+  {
+   "tipo": "arreglar",
+   "emoji": "🦍",
+   "loca": "El árbol duerme debajo del gorila.",
+   "respuesta": "El gorila duerme debajo del árbol.",
+   "alternativas": [
+    "Debajo del árbol duerme el gorila."
+   ],
+   "roles": "art n v adv prep n",
+   "pista": "¿Quién tiene sueño? ¿Y qué le da sombra?"
+  },
+  {
+   "tipo": "crear",
+   "emoji": "🧱",
+   "palabras": [
+    "el",
+    "el",
+    "la",
+    "león",
+    "cebra",
+    "mono",
+    "duerme",
+    "corre",
+    "come",
+    "hoy",
+    "en",
+    "río",
+    "árbol",
+    "."
+   ],
+   "ejemplos": [
+    "Hoy el león duerme en el árbol.",
+    "La cebra corre en el río.",
+    "El mono come hoy."
+   ]
+  }
+ ]
+}
+</script>
+
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById('datos').textContent);
+  const SIGNO = /^[¿?¡!.,]$/;
+  const $ = (id) => document.getElementById(id);
+  const nombres = new Set([...(D.nombres || []), ...(D.ninos || [])]);
+  const INSTRUCCION = {
+    ordenar: 'Ordena las palabras para formar una frase.',
+    elegir: '¿Cuál está bien escrita?',
+    arreglar: '¡Qué frase más loca! Arréglala.',
+    crear: 'Inventa tu propia frase.'
+  };
+  const LETRAS = ['ligada', 'ligada-deco', 'imprenta', 'mayusculas', 'legible'];
+  const ANIMO = ['¡Muy bien!', '¡Genial!', '¡Perfecto!', '¡Eso es!', '¡Fenomenal!'];
+
+  function trocear(s) {
+    return s.replace(/([¿¡])/g, '$1 ').replace(/([?!.,])/g, ' $1').split(/\s+/).filter(Boolean);
+  }
+  const mayus = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  const minus = (t) => t.charAt(0).toLowerCase() + t.slice(1);
+
+  function cartasDe(ej) {
+    const roles = (ej.roles || '').split(/\s+/).filter(Boolean);
+    let r = 0, primera = true;
+    const fuente = ej.palabras || trocear(ej.respuesta);
+    return fuente.map((t, i) => {
+      let texto = t;
+      if (SIGNO.test(t)) return { id: i, t, rol: null, signo: true };
+      if (!ej.palabras && primera && !nombres.has(t)) texto = minus(t);
+      primera = false;
+      return { id: i, t: texto, rol: roles[r++] || null, signo: false };
+    });
+  }
+
+  function barajar(lista) {
+    const orig = lista.map((c) => c.id).join();
+    let copia = lista.slice();
+    for (let intento = 0; intento < 20; intento++) {
+      for (let i = copia.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copia[i], copia[j]] = [copia[j], copia[i]];
+      }
+      if (copia.map((c) => c.id).join() !== orig || copia.length < 2) break;
+    }
+    return copia.map((c) => c.id);
+  }
+
+  // The teacher's last menu choice wins over the lesson default.
+  function leerLetra() {
+    let guardada = null;
+    try { guardada = localStorage.getItem('ordenar-oraciones:letra'); } catch (_) {}
+    return LETRAS.includes(guardada) ? guardada : (LETRAS.includes(D.letra) ? D.letra : 'ligada');
+  }
+
+  const estado = D.ejercicios.map((ej) => {
+    if (ej.tipo === 'elegir') return { hecho: false, intentos: 0, elegida: [] };
+    const cartas = cartasDe(ej);
+    return { hecho: false, intentos: 0, cartas, orden: barajar(cartas), puestas: [], leida: false };
+  });
+  let actual = 0, estrellas = 0, profe = false, simbolos = !!D.simbolos, letra = leerLetra();
+
+  function ganar() {
+    estrellas++;
+    $('cuenta').textContent = estrellas;
+    const e = $('estrellas');
+    e.classList.remove('salta'); void e.offsetWidth; e.classList.add('salta');
+  }
+
+  // Cards in the pile are lowercase (no hint). In the line, whatever word sits first
+  // is shown capitalized right away, so the sentence being built is always written correctly.
+  function textoFrase(s) {
+    let primera = true;
+    return s.puestas.map((id) => {
+      const c = s.cartas[id];
+      if (c.signo || !primera) return c.t;
+      primera = false; return mayus(c.t);
+    });
+  }
+  function unir(tokens) {
+    return tokens.join(' ').replace(/([¿¡]) /g, '$1').replace(/ ([?!.,])/g, '$1');
+  }
+
+  function el(tag, props = {}, hijos = []) {
+    const n = document.createElement(tag);
+    Object.entries(props).forEach(([k, v]) => {
+      if (k === 'class') n.className = v;
+      else if (k === 'on') Object.entries(v).forEach(([ev, fn]) => n.addEventListener(ev, fn));
+      else if (k === 'html') n.innerHTML = v;
+      else n.setAttribute(k, v);
+    });
+    [].concat(hijos).forEach((h) => h != null && n.append(h));
+    return n;
+  }
+
+  function carta(c, texto, fn) {
+    const b = el('button', { type: 'button', class: 'carta' + (c.signo ? ' signo' : ''), on: { click: fn } }, texto);
+    b.append(el('span', { class: 'simbolo' + (c.rol ? ' s-' + c.rol : ''), 'aria-hidden': 'true' }));
+    return b;
+  }
+
+  function aviso(tipo, html) {
+    const a = $('aviso');
+    a.className = 'aviso ' + tipo;
+    a.innerHTML = html;
+  }
+
+  function pintarPuntos() {
+    const p = $('puntos');
+    p.replaceChildren(...D.ejercicios.map((_, i) => el('button', {
+      type: 'button',
+      class: 'punto' + (estado[i].hecho ? ' hecho' : '') + (i === actual ? ' actual' : ''),
+      'aria-label': 'Ejercicio ' + (i + 1) + (estado[i].hecho ? ', hecho' : ''),
+      on: { click: () => ir(i) }
+    }, estado[i].hecho ? '★' : String(i + 1))));
+  }
+
+  function ir(i) { actual = i; pintar(); }
+
+  function pintar() {
+    $('hoja').classList.toggle('con-simbolos', simbolos);
+    $('hoja').dataset.letra = letra;
+    $('hoja').classList.toggle('cursiva', letra.startsWith('ligada'));
+    pintarPuntos();
+    if (actual >= D.ejercicios.length) return pintarFinal();
+    const ej = D.ejercicios[actual], s = estado[actual];
+    const cab = el('div', {}, []);
+    if (D.ninos && D.ninos.length) cab.append(el('div', { class: 'turno' }, 'Turno de ' + D.ninos[actual % D.ninos.length]));
+    cab.append(el('h2', {}, INSTRUCCION[ej.tipo] || ''));
+    const caja = el('section', { class: 'ejercicio', 'aria-label': 'Ejercicio ' + (actual + 1) }, [
+      el('div', { class: 'enunciado' }, [el('div', { class: 'emoji', 'aria-hidden': 'true' }, ej.emoji || '✏️'), cab])
+    ]);
+    if (ej.tipo === 'elegir') pintarElegir(caja, ej, s);
+    else pintarCartas(caja, ej, s);
+    caja.append(el('div', { id: 'aviso', class: 'aviso', 'aria-live': 'polite' }));
+    $('zona').replaceChildren(caja);
+    if (s.hecho) avisoHecho(ej, s);
+    else if (s.leida) aviso('bien', 'Lee tu frase en voz alta. <span class="frase-final">' + unir(textoFrase(s)) + '</span>');
+  }
+
+  function avisoHecho(ej, s) {
+    if (ej.tipo === 'crear') aviso('bien', '<strong>¡Qué frase tan buena!</strong> <span class="frase-final">' + unir(textoFrase(s)) + '</span>');
+    else aviso('bien', '<strong>' + ANIMO[actual % ANIMO.length] + '</strong> ' + (ej.porque || ''));
+  }
+
+  function pintarCartas(caja, ej, s) {
+    if (ej.tipo === 'arreglar') caja.append(el('div', { class: 'loca' }, ej.loca));
+    const renglon = el('div', { class: 'renglon' + (s.hecho ? ' bien' : ''), id: 'renglon', 'aria-label': 'Tu frase' });
+    const bloqueado = s.hecho || (ej.tipo === 'crear' && s.leida);
+    const vista = textoFrase(s);
+    s.puestas.forEach((id, k) => renglon.append(carta(s.cartas[id], vista[k], () => {
+      if (bloqueado) return;
+      s.puestas.splice(k, 1); pintar();
+    })));
+    caja.append(renglon);
+    if (!bloqueado) {
+      const libres = s.orden.filter((id) => !s.puestas.includes(id));
+      caja.append(el('div', { class: 'monton', 'aria-label': 'Palabras' }, libres.map((id) => carta(s.cartas[id], s.cartas[id].t, () => {
+        s.puestas.push(id); pintar();
+      }))));
+    }
+    const acciones = el('div', { class: 'acciones' });
+    if (!bloqueado) {
+      acciones.append(el('button', { type: 'button', class: 'boton', on: { click: () => { s.puestas = []; pintar(); } } }, 'Borrar'));
+      if (ej.tipo === 'crear') acciones.append(el('button', { type: 'button', class: 'boton principal', on: { click: () => leer(ej, s) } }, 'Leer mi frase'));
+      else acciones.append(el('button', { type: 'button', class: 'boton principal', on: { click: () => comprobar(ej, s) } }, 'Comprobar'));
+    } else if (ej.tipo === 'crear' && !s.hecho) {
+      acciones.append(el('button', { type: 'button', class: 'boton', on: { click: () => { s.leida = false; pintar(); } } }, 'Cambiar'));
+    }
+    acciones.append(botonSiguiente());
+    caja.append(acciones);
+  }
+
+  function botonSiguiente() {
+    const ultimo = actual === D.ejercicios.length - 1;
+    return el('button', { type: 'button', class: 'boton siguiente', on: { click: () => ir(actual + 1) } }, ultimo ? 'Terminar ★' : 'Siguiente →');
+  }
+
+  function comprobar(ej, s) {
+    if (s.puestas.length < s.cartas.length) return aviso('casi', 'Todavía quedan palabras por colocar 🙂');
+    const tengo = s.puestas.map((id) => s.cartas[id].t.toLowerCase()).join(' ');
+    const validas = [ej.respuesta, ...(ej.alternativas || [])].map((f) => trocear(f).map((t) => t.toLowerCase()).join(' '));
+    s.intentos++;
+    if (validas.includes(tengo)) {
+      s.hecho = true; ganar(); pintar();
+      return;
+    }
+    let msg = '<strong>Casi…</strong> ' + (ej.pista || 'Léela en voz alta. ¿Suena bien?');
+    if (s.intentos >= 2) {
+      const primera = trocear(ej.respuesta).find((t) => !SIGNO.test(t));
+      msg += '<br>Pista extra: la primera palabra es «' + minus(primera) + '».';
+    }
+    aviso('casi', msg);
+    const r = $('renglon'); r.classList.remove('temblor'); void r.offsetWidth; r.classList.add('temblor');
+  }
+
+  function leer(ej, s) {
+    if (!s.puestas.length) return aviso('casi', 'Primero pon algunas palabras en el renglón 🙂');
+    const ultima = s.cartas[s.puestas[s.puestas.length - 1]];
+    if (!ultima.signo) return aviso('casi', '¿Has puesto el punto final?');
+    s.leida = true; pintar();
+  }
+
+  function pintarElegir(caja, ej, s) {
+    const letras = 'ABC';
+    const grid = el('div', { class: 'opciones' });
+    ej.opciones.forEach((op, i) => {
+      let cls = 'opcion';
+      if (s.hecho && i === ej.correcta) cls += ' bien';
+      else if (s.elegida.includes(i)) cls += ' mal';
+      grid.append(el('button', { type: 'button', class: cls, on: { click: () => elegir(ej, s, i) } }, [el('span', { class: 'letra' }, letras[i]), el('span', { class: 'frase' }, op)]));
+    });
+    caja.append(grid);
+    caja.append(el('div', { class: 'acciones' }, botonSiguiente()));
+  }
+
+  function elegir(ej, s, i) {
+    if (s.hecho) return;
+    s.intentos++;
+    if (i === ej.correcta) { s.hecho = true; ganar(); pintar(); return; }
+    if (!s.elegida.includes(i)) s.elegida.push(i);
+    pintar();
+    aviso('casi', '<strong>Mmm…</strong> ' + (ej.pista || 'Léelas en voz alta. ¿Cuál suena mejor?'));
+  }
+
+  function panelProfe(ej, s) {
+    const p = el('aside', { class: 'profe', 'aria-label': 'Notas para la profesora' }, el('h3', {}, 'Solo para la profe'));
+    if (ej.tipo === 'elegir') p.append(el('p', {}, 'Correcta: ' + 'ABC'[ej.correcta] + ' · ' + ej.opciones[ej.correcta]));
+    if (ej.respuesta) p.append(el('p', {}, 'Respuesta: ' + ej.respuesta));
+    if (ej.alternativas && ej.alternativas.length) p.append(el('p', {}, 'También valen: ' + ej.alternativas.join(' · ')));
+    if (ej.ejemplos) p.append(el('p', {}, 'Ejemplos: ' + ej.ejemplos.join(' · ')));
+    if (ej.nota) p.append(el('p', {}, ej.nota));
+    if (!s.hecho) {
+      const acc = el('div', { class: 'acciones' });
+      if (ej.tipo === 'crear') {
+        acc.append(el('button', { type: 'button', class: 'boton principal', on: { click: () => { s.leida = true; s.hecho = true; ganar(); pintar(); } } }, '✓ ¡Vale!'));
+      } else if (ej.tipo !== 'elegir') {
+        acc.append(el('button', { type: 'button', class: 'boton principal', on: { click: () => { s.hecho = true; ganar(); pintar(); } } }, '✓ ¡También vale!'));
+        acc.append(el('button', { type: 'button', class: 'boton', on: { click: () => mostrarSolucion(ej, s) } }, 'Ver solución'));
+      }
+      if (acc.childElementCount) p.append(acc);
+    }
+    return p;
+  }
+
+  function mostrarSolucion(ej, s) {
+    const libres = s.cartas.map((c) => c.id);
+    s.puestas = trocear(ej.respuesta).map((t) => {
+      const k = libres.findIndex((id) => id != null && s.cartas[id].t.toLowerCase() === t.toLowerCase());
+      const id = libres[k]; libres[k] = null; return id;
+    }).filter((id) => id != null);
+    s.hecho = true; pintar();
+  }
+
+  function reiniciar() {
+    estado.forEach((s) => {
+      s.hecho = false; s.intentos = 0;
+      if (s.elegida) s.elegida = [];
+      else { s.puestas = []; s.leida = false; s.orden = barajar(s.cartas); }
+    });
+    estrellas = 0; $('cuenta').textContent = 0; ir(0);
+  }
+
+  function pintarFinal() {
+    const total = D.ejercicios.length;
+    $('zona').replaceChildren(el('section', { class: 'ejercicio final' }, [
+      el('div', { class: 'grande' }, '★ ' + estrellas + ' de ' + total),
+      el('h2', {}, estrellas === total ? '¡Todas las estrellas! ¡Sois unos cracks!' : '¡Buen trabajo, equipo!'),
+      el('div', { class: 'acciones' }, el('button', { type: 'button', class: 'boton principal', on: { click: reiniciar } }, 'Jugar otra vez'))
+    ]));
+  }
+
+  $('titulo').textContent = D.titulo || 'Ordena la frase';
+  $('nivel').textContent = D.nivel ? 'Nivel ' + D.nivel : '';
+  $('btn-simbolos').setAttribute('aria-pressed', String(simbolos));
+  $('btn-simbolos').addEventListener('click', (e) => { simbolos = !simbolos; e.currentTarget.setAttribute('aria-pressed', String(simbolos)); pintar(); });
+  $('sel-letra').value = letra;
+  $('sel-letra').addEventListener('change', (e) => {
+    letra = e.currentTarget.value;
+    try { localStorage.setItem('ordenar-oraciones:letra', letra); } catch (_) {}
+    pintar();
+  });
+  pintar();
+})();
+</script>
