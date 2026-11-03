@@ -1,0 +1,507 @@
+<!doctype html>
+<html lang="es" data-tema="selva"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="asignatura" content="Matemáticas">
+<title>La serpiente Suma</title>
+<style id="kit">
+
+:root, [data-tema="clasico"] {
+  --h: 330; --h2: 280;
+  --fondo: oklch(0.975 0.012 var(--h));
+  --superficie: oklch(0.995 0.004 var(--h));
+  --texto: oklch(0.25 0.03 var(--h2));
+  --texto-suave: oklch(0.43 0.03 var(--h2));
+  --acento: oklch(0.47 0.15 var(--h));
+  --acento-texto: oklch(0.995 0.004 var(--h));
+  --bien: oklch(0.50 0.12 150);
+  --casi: oklch(0.55 0.13 70);
+  --borde: oklch(0.86 0.02 var(--h));
+  --motivo: "✿";
+}
+[data-tema="oceano"]   { --h: 220; --h2: 240; --motivo: "≈"; }
+[data-tema="selva"]    { --h: 145; --h2: 160; --motivo: "❦"; }
+[data-tema="espacio"]  { --h: 285; --h2: 270; --motivo: "✦"; }
+[data-tema="otono"]    { --h: 45;  --h2: 30;  --motivo: "❧"; }
+[data-tema="invierno"] { --h: 235; --h2: 250; --motivo: "❄"; }
+[data-tema="primavera"]{ --h: 350; --h2: 330; --motivo: "❀"; }
+[data-tema="selva"] { --bien: oklch(0.50 0.12 200); }
+
+:root {
+  --t-base: 28px; --t-peque: 22px; --t-titulo: 48px; --t-grande: 64px;
+  --radio: 18px; --sombra: 0 6px 0 var(--borde);
+  --sistema: ui-rounded, "SF Pro Rounded", "Avenir Next", "Helvetica Neue", system-ui, sans-serif;
+  --margen: 40px; --margen-abajo: 88px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--fondo); color: var(--texto); font: 500 var(--t-base)/1.35 var(--sistema);
+  -webkit-font-smoothing: antialiased; overflow: hidden;
+}
+[data-letra="ligada"] { font-family: "Playwrite ES", cursive; font-weight: 400; }
+:focus-visible { outline: 4px solid var(--acento); outline-offset: 4px; border-radius: 10px; }
+
+.k-escena { height: 100vh; display: grid; grid-template-rows: auto 1fr auto; gap: 16px;
+  padding: 84px var(--margen) var(--margen-abajo); position: relative; }
+.k-escena::before, .k-escena::after { content: var(--motivo); position: absolute; font-size: 56px; color: var(--borde);
+  pointer-events: none; }
+.k-escena::before { bottom: 18px; left: 22px; transform: rotate(-14deg); } .k-escena::after { bottom: 18px; right: 22px; transform: rotate(18deg); }
+.k-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.k-titulo { font-size: var(--t-titulo); line-height: 1.05; margin: 0; letter-spacing: -0.01em; }
+.k-consigna { font-size: var(--t-base); color: var(--texto-suave); margin: 6px 0 0; }
+.k-centro { display: grid; place-items: center; min-height: 0; }
+.k-pie { display: flex; justify-content: center; gap: 16px; align-items: center; }
+
+.k-btn { min-height: 64px; min-width: 64px; padding: 0 26px; border-radius: 999px; border: 3px solid var(--texto);
+  background: var(--superficie); color: var(--texto); font: 700 var(--t-peque)/1 var(--sistema); cursor: pointer;
+  box-shadow: 0 4px 0 var(--texto); transition: transform .12s, box-shadow .12s; }
+.k-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--texto); }
+.k-btn.k-principal { background: var(--acento); color: var(--acento-texto); border-color: var(--acento); box-shadow: 0 4px 0 var(--texto); }
+.k-btn.k-pequeno { min-height: 48px; font-size: 18px; padding: 0 16px; }
+.k-tarjeta { background: var(--superficie); border: 3px solid var(--borde); border-radius: var(--radio);
+  padding: 18px 22px; box-shadow: var(--sombra); }
+.k-opciones { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; width: min(100%, 1000px); }
+.k-opcion { min-height: 96px; font-size: var(--t-base); text-align: center; border: 3px solid var(--texto);
+  border-radius: var(--radio); background: var(--superficie); color: var(--texto); cursor: pointer; padding: 14px;
+  box-shadow: 0 5px 0 var(--texto); transition: transform .12s; position: relative; font-family: inherit; font-weight: 600; }
+.k-opcion .k-num { position: absolute; top: 8px; left: 12px; font-size: 16px; color: var(--texto-suave); }
+.k-opcion[aria-pressed="true"], .k-sel { outline: 5px solid var(--acento); outline-offset: 3px; }
+.k-opcion.k-ok { border-color: var(--bien); box-shadow: 0 5px 0 var(--bien); }
+.k-opcion.k-otra { border-style: dashed; border-color: var(--casi); box-shadow: none; }
+
+.k-aviso { position: fixed; left: 50%; top: 20px; transform: translate(-50%, -16px); opacity: 0; z-index: 8; pointer-events: none;
+  padding: 14px 26px; border-radius: 999px; font: 700 var(--t-base)/1 var(--sistema); background: var(--superficie);
+  border: 3px solid currentColor; transition: opacity .2s, transform .2s; }
+.k-aviso.k-ver { opacity: 1; transform: translate(-50%, 0); }
+.k-aviso.k-bien { color: var(--bien); } .k-aviso.k-casi { color: var(--casi); }
+.k-envio { position: fixed; z-index: 7; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 880px; max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px); overflow: auto; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 12px 48px var(--borde); }
+.k-envio[hidden] { display: none; }
+.k-envio h2 { margin: 0; font-size: var(--t-base); }
+.k-envio label { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.k-envio input { font: inherit; min-height: 64px; padding: 0 18px; border: 3px solid var(--texto); border-radius: var(--radio); background: var(--superficie); color: var(--texto); width: 12em; max-width: 100%; }
+.k-envio textarea { font: inherit; font-size: var(--t-peque); padding: 12px; border: 3px solid var(--borde); border-radius: var(--radio); background: var(--fondo); color: var(--texto); resize: none; }
+.k-envio-botones { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+.k-envio small { font-size: var(--t-peque); color: var(--texto-suave); }
+.k-progreso { display: flex; gap: 10px; }
+.k-progreso i { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--texto-suave); }
+.k-progreso i.k-hecho { background: var(--bien); border-color: var(--bien); }
+.k-progreso i.k-ahora { border-color: var(--acento); background: var(--acento); }
+.k-confeti { position: fixed; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none; overflow: hidden; }
+.k-confeti span { position: absolute; top: -40px; font-size: 34px; animation: k-cae 1.4s ease-in forwards; }
+@keyframes k-cae { to { transform: translateY(110vh) rotate(260deg); } }
+
+[data-profe] { display: none !important; }
+body.k-profe [data-profe] { display: revert !important; }
+body.k-profe { overflow: auto; }
+body.k-profe::before { content: "Vista profe · los niños no ven esto"; position: fixed; top: 0; left: 0; right: 0; z-index: 9;
+  background: var(--texto); color: var(--fondo); font: 700 16px/1 var(--sistema); padding: 8px 14px; text-align: center; }
+.k-solucion { color: var(--bien); font-weight: 700; }
+body.k-profe .k-herramientas { top: 46px; }
+
+.k-herramientas { position: fixed; top: 14px; right: 16px; display: flex; gap: 8px; z-index: 5; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (max-width: 760px) { :root { --t-base: 22px; --t-titulo: 34px; --margen: 16px; --margen-abajo: 24px; } body { overflow: auto; } .k-escena { height: auto; min-height: 100vh; } }
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { overflow: visible; background: #fff; }
+  .k-escena { height: auto; padding: 0; } .k-escena::before, .k-escena::after { display: none; }
+  .k-herramientas, .k-pie, .k-aviso, .k-envio, [data-profe] { display: none !important; }
+  .k-imprimir-nombre { display: flex !important; gap: 12mm; font-size: 12pt; margin-bottom: 6mm; }
+  .k-imprimir-nombre span { flex: 1; border-bottom: .4mm solid #000; }
+}
+.k-imprimir-nombre { display: none; }
+</style>
+<style id="pagina">
+#centro { grid-template-rows: auto auto; gap: 10px; place-items: stretch; align-content: center; }
+#serpiente { height: min(320px, 27vw, 30vh); width: auto; max-width: 100%; justify-self: center; display: block; }
+#serpiente .celda { stroke: var(--texto); stroke-width: 3; }
+#serpiente .c0 { fill: oklch(0.80 0.14 60); } #serpiente .c1 { fill: oklch(0.80 0.15 135); } #serpiente .c2 { fill: oklch(0.74 0.14 25); }
+#serpiente .c3 { fill: oklch(0.76 0.11 245); } #serpiente .c4 { fill: oklch(0.74 0.11 305); } #serpiente .c5 { fill: oklch(0.88 0.14 95); }
+#serpiente .hecha { opacity: 0.55; }
+#serpiente .aqui { stroke-width: 8; }
+#serpiente text { fill: var(--texto); font-family: var(--sistema); font-weight: 800; text-anchor: middle; dominant-baseline: central; }
+#serpiente .num { font-size: var(--t-peque); font-weight: 600; }
+#serpiente .op { font-size: var(--t-peque); }
+#serpiente .cabeza { fill: oklch(0.80 0.15 135); stroke: var(--texto); stroke-width: 4; }
+#serpiente .ojo { fill: var(--superficie); stroke: var(--texto); stroke-width: 3; }
+#serpiente .pupila { fill: var(--texto); }
+#panel { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: center; }
+#caja { min-height: 112px; display: flex; flex-direction: column; justify-content: center; padding: 10px 24px; }
+#caja p { margin: 4px 0; }
+#pregunta { white-space: nowrap; font-size: var(--t-grande); font-weight: 700; font-variant-numeric: tabular-nums; }
+#pregunta .hueco { display: inline-block; min-width: 2.2em; border-bottom: 4px solid var(--texto); text-align: center; }
+#mensaje { font-size: var(--t-base); color: var(--texto-suave); }
+#teclado { display: grid; grid-template-columns: repeat(6, 64px); gap: 8px; }
+#teclado[hidden], #comprobar[hidden], #seguir[hidden] { display: none; }
+#teclado button { min-height: 64px; font: inherit; font-size: var(--t-base); font-weight: 700; border: 3px solid var(--borde); border-radius: var(--radio); background: var(--superficie); color: var(--texto); cursor: pointer; }
+@media (max-width: 1000px) { #panel { grid-template-columns: 1fr; } #teclado { justify-self: center; } }
+#profe { position: fixed; top: 96px; left: 50%; transform: translateX(-50%); width: min(980px, 92vw); font-size: var(--t-peque); padding: 10px 22px; z-index: 4; }
+#profe p, #profe li { margin: 3px 0; }
+#profe li.ahora { font-weight: 700; color: var(--acento-texto); background: var(--acento); border-radius: 8px; padding: 0 8px; }
+</style></head>
+<body>
+<div class="k-imprimir-nombre"><span>Nombre</span><span>Fecha</span></div>
+<main class="k-escena">
+  <header class="k-cabecera">
+    <div><h1 class="k-titulo">🐍 La serpiente Suma</h1><p class="k-consigna" id="consigna"></p></div>
+  </header>
+  <section class="k-centro" id="centro">
+    <svg id="serpiente" viewBox="0 0 1080 318" role="img" aria-label="La serpiente Suma: 30 casillas hasta la cueva del tesoro"></svg>
+    <div id="panel">
+      <div id="caja" class="k-tarjeta">
+        <p id="pregunta"></p>
+        <p id="mensaje"></p>
+      </div>
+      <div id="teclado" role="group" aria-label="Teclado de números"></div>
+    </div>
+  </section>
+  <footer class="k-pie">
+    <button class="k-btn k-principal" type="button" id="comprobar">✓ Comprobar</button>
+    <button class="k-btn k-principal" type="button" id="seguir" hidden>Seguir →</button>
+    <button class="k-btn" type="button" id="reiniciar">↺ Empezar de nuevo</button>
+  </footer>
+  <aside class="k-tarjeta" data-profe id="profe">
+    <p id="profe-ahora"></p>
+    <ol id="curiosidades"></ol>
+  </aside>
+</main>
+<script id="clave-familias">var ClaveFamilias = (function () {
+  var HASH = "6e63e187b24540db3a4df7451f85581ec3ea9a3fa72a4200b77890e9eff06a33";
+  var local = location.protocol === "file:";
+  var marca = "clave-familias";
+  function ok() { try { return sessionStorage.getItem(marca) === HASH; } catch (e) { return false; } }
+  function huella(t) {
+    if (!window.crypto || !crypto.subtle) return Promise.resolve("");
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(t.trim().toLowerCase().replace(/\s+/g, "")))
+      .then(function (b) { return Array.from(new Uint8Array(b), function (x) { return x.toString(16).padStart(2, "0"); }).join(""); });
+  }
+  function pedir(fn, si_no) {
+    if (local || ok()) { fn(); return; }
+    var fondo = document.createElement("div");
+    fondo.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(42,31,45,.45);padding:1rem";
+    fondo.innerHTML = '<form role="dialog" aria-modal="true" aria-label="Código de las familias" style="display:grid;gap:.8rem;border:3px solid #2a1f2d;border-radius:18px;padding:1.5rem;max-width:22rem;width:100%;box-sizing:border-box;font:20px/1.4 ui-rounded,\'Avenir Next\',system-ui,sans-serif;color:#2a1f2d;background:#fffdf8">' +
+      '<strong style="font-size:1.2em">🔒 Esto es para hacerlo con un adulto</strong>' +
+      '<label>Escribe el código de las familias<input type="password" autocomplete="off" style="display:block;width:100%;box-sizing:border-box;margin-top:.4rem;font:inherit;padding:.5rem .7rem;border:2px solid #2a1f2d;border-radius:10px"></label>' +
+      '<span class="cf-msg" aria-live="polite" style="min-height:1.4em;color:#9b2f66"></span>' +
+      '<span style="display:flex;justify-content:flex-end">' +
+      '<button class="cf-no" type="button" style="font:inherit;padding:.5rem 1rem;margin-right:.6rem;border-radius:10px;border:2px solid #2a1f2d;background:#fff;color:#2a1f2d">Cancelar</button>' +
+      '<button type="submit" style="font:inherit;padding:.5rem 1rem;border-radius:10px;border:2px solid #2a1f2d;background:#2a1f2d;color:#fff">Entrar</button></span></form>';
+    var form = fondo.querySelector("form");
+    var input =  (fondo.querySelector("input"));
+    var msg =  (fondo.querySelector(".cf-msg"));
+    function cerrar(si) {
+      document.removeEventListener("keydown", esc, true);
+      if (fondo.parentNode) fondo.parentNode.removeChild(fondo);
+      if (si) fn(); else if (si_no) si_no();
+    }
+    function esc(e) { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); cerrar(false); } else e.stopPropagation(); }
+    fondo.querySelector(".cf-no").addEventListener("click", function () { cerrar(false); });
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      huella(input.value).then(function (h) {
+        if (h === HASH) {
+          try { sessionStorage.setItem(marca, HASH); } catch (_) {  }
+          cerrar(true);
+        } else { msg.textContent = "Ese no es. Pídeselo a un adulto de casa."; input.select(); }
+      });
+    });
+    document.addEventListener("keydown", esc, true);
+    document.body.appendChild(fondo); input.focus();
+  }
+  return { pedir: pedir, abierta: function () { return local || ok(); } };
+})();
+</script>
+<script id="kit">"use strict";
+const Kit = (() => {
+  const esProfe = location.hash === "#profe";
+  const clave = "kit:" + location.pathname;
+  let sonido = false, ctx =  (null), aviso =  (null);
+  const teclas =  ({});
+
+  function nota(f, t) {
+    if (!sonido) return;
+    ctx = ctx || new AudioContext();
+    const o = ctx.createOscillator(), g = ctx.createGain(), t0 = ctx.currentTime + t;
+    o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.05, t0 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.3); o.start(t0); o.stop(t0 + 0.32);
+  }
+  function avisar(texto, tipo) {
+    if (!aviso) { aviso = document.createElement("div"); aviso.className = "k-aviso"; aviso.setAttribute("role", "status"); document.body.append(aviso); }
+    aviso.className = "k-aviso " + tipo; aviso.textContent = texto;
+    requestAnimationFrame(() => aviso && aviso.classList.add("k-ver"));
+    clearTimeout( (avisar).t);
+     (avisar).t = setTimeout(() => aviso && aviso.classList.remove("k-ver"), 1800);
+  }
+  function celebrar() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const c = document.createElement("div"); c.className = "k-confeti";
+    const m = getComputedStyle(document.documentElement).getPropertyValue("--motivo").replace(/"/g, "").trim() || "✿";
+    for (let i = 0; i < 14; i++) {
+      const s = document.createElement("span"); s.textContent = i % 3 ? m : "⭐";
+      s.style.left = (5 + Math.random() * 90) + "vw"; s.style.animationDelay = (Math.random() * 0.3) + "s";
+      c.append(s);
+    }
+    document.body.append(c); setTimeout(() => c.remove(), 1600);
+  }
+
+  const api = {
+    esProfe,
+    barajar(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; },
+    mazo(cartas, igual = c => JSON.stringify(c)) {
+      let monton =  ([]), ultima = "";
+      const sacar = () => {
+        if (!monton.length) monton = api.barajar(cartas);
+        let k = monton.findIndex(c => igual(c) !== ultima);
+        if (k < 0) { monton = api.barajar(cartas); k = Math.max(0, monton.findIndex(c => igual(c) !== ultima)); }
+        const c = monton.splice(k, 1)[0]; ultima = igual(c); return c;
+      };
+      return { sacar, reiniciar() { monton = []; ultima = ""; } };
+    },
+    enviarProfe(o) {
+      const d = document.createElement("div"); d.className = "k-tarjeta k-envio"; d.hidden = true;
+      d.setAttribute("role", "dialog"); d.setAttribute("aria-modal", "true"); d.setAttribute("aria-label", "Enviar a la profe");
+      d.innerHTML = '<h2>📩 Enviar a la profe</h2><label>Tu nombre <input type="text" autocomplete="off" maxlength="30"></label>' +
+        '<textarea readonly rows="6" aria-label="El mensaje para la profe"></textarea><div class="k-envio-botones">' +
+        '<button class="k-btn k-principal" type="button" data-k="correo">📧 Abrir el correo</button>' +
+        '<button class="k-btn" type="button" data-k="copiar">📋 Copiar el mensaje</button>' +
+        '<button class="k-btn" type="button" data-k="cerrar">Volver al juego</button></div>' +
+        "<small>Si no se abre el correo, pulsa «Copiar el mensaje» y pégalo en Telegram o en un correo a " + o.correo + ".</small>";
+      const nombre =  (d.querySelector("input")), caja =  (d.querySelector("textarea"));
+      const n = () => nombre.value.trim(), poner = () => { caja.value = o.texto(n() || "(escribe tu nombre)"); };
+      const conNombre = () => { if (n()) return true; api.casi("Escribe tu nombre"); nombre.focus(); return false; };
+      function copiar() {
+        poner();
+        const hecho = () => api.bien("Mensaje copiado: pégalo en Telegram o en tu correo");
+        const viejo = () => {
+          caja.focus(); caja.select(); caja.setSelectionRange(0, caja.value.length);
+          try { if (document.execCommand("copy")) { hecho(); return; } } catch (e) {  }
+          api.casi("Mantén el dedo sobre el mensaje y elige «Copiar»");
+        };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(caja.value).then(hecho, viejo); else viejo();
+      }
+      nombre.addEventListener("input", poner);
+      d.addEventListener("click", e => {
+        const b =  (e.target).closest("button"); if (!b) return;
+        if (b.dataset.k === "cerrar") d.hidden = true;
+        else if (!conNombre()) return;
+        else if (b.dataset.k === "copiar") copiar();
+        else location.href = "mailto:" + o.correo + "?subject=" + encodeURIComponent(o.asunto(n())) + "&body=" + encodeURIComponent(o.texto(n()));
+      });
+      document.body.append(d);
+      return { abrir() { d.hidden = false; poner(); if (!n()) nombre.focus(); }, cerrar() { d.hidden = true; } };
+    },
+    bien(msg = "¡Muy bien!") { avisar("✓ " + msg, "k-bien"); nota(784, 0); nota(1046.5, 0.09); celebrar(); },
+    casi(msg = "¡Casi! Prueba otra vez") { avisar("↻ " + msg, "k-casi"); nota(523.25, 0); },
+    teclas(mapa) { Object.assign(teclas, mapa); },
+    tocar(piezas, destinos, soltar) {
+      let elegida =  (null);
+      document.addEventListener("click", e => {
+        const t =  (e.target);
+        const p = t.closest(piezas), d = t.closest(destinos);
+        if (p) { if (elegida) elegida.classList.remove("k-sel"); elegida = p; p.classList.add("k-sel"); return; }
+        if (d && elegida) { elegida.classList.remove("k-sel"); soltar(elegida, d); elegida = null; }
+      });
+    },
+    profe: {
+      publicar(estado) { try { localStorage.setItem(clave, JSON.stringify({ estado, t: Date.now() })); } catch (e) {  } },
+      escuchar(fn) {
+        addEventListener("storage", e => { if (e.key === clave && e.newValue) fn(JSON.parse(e.newValue).estado); });
+        if (location.hash === "#profe") try { const v = localStorage.getItem(clave); if (v) fn(JSON.parse(v).estado); } catch (e) {  }
+      },
+      abrir() { ClaveFamilias.pedir(() => window.open(location.pathname + location.search + "#profe", "_blank")); },
+    },
+    conClave(fn) { ClaveFamilias.pedir(fn); },
+    pantallaCompleta() { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); },
+  };
+
+  function herramientas() {
+    const h = document.createElement("div"); h.className = "k-herramientas";
+    h.innerHTML = '<button class="k-btn k-pequeno" type="button" data-k="sonido" aria-pressed="false">🔈 Sonido</button>' +
+      '<button class="k-btn k-pequeno" type="button" data-k="completa">⛶ Pantalla completa</button>' +
+      (esProfe ? "" : '<button class="k-btn k-pequeno" type="button" data-k="profe" title="Abre la vista profe en otra pestaña (P)">👩‍🏫</button>');
+    h.addEventListener("click", e => {
+      const b =  (e.target).closest("button"); if (!b) return;
+      if (b.dataset.k === "sonido") { sonido = !sonido; b.setAttribute("aria-pressed", String(sonido)); b.textContent = sonido ? "🔊 Sonido" : "🔈 Sonido"; if (sonido) nota(880, 0); }
+      if (b.dataset.k === "completa") api.pantallaCompleta();
+      if (b.dataset.k === "profe") api.profe.abrir();
+    });
+    document.body.append(h);
+  }
+
+  addEventListener("keydown", e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const t =  (e.target);
+    if (t.matches("input, textarea, [contenteditable]")) return;
+    const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (teclas[k]) { e.preventDefault(); teclas[k](); return; }
+    if (k === "f") api.pantallaCompleta();
+    else if (k === "p" && !esProfe) api.profe.abrir();
+  });
+  addEventListener("DOMContentLoaded", () => {
+    herramientas();
+    if (!esProfe) return;
+    if (ClaveFamilias.abierta()) { document.body.classList.add("k-profe"); return; }
+    document.body.style.visibility = "hidden";
+    ClaveFamilias.pedir(() => { document.body.style.visibility = ""; document.body.classList.add("k-profe"); },
+      () => { location.replace(location.pathname + location.search); });
+  });
+  return api;
+})();
+</script>
+<script id="pagina">"use strict";
+
+const ESTRELLAS = [4, 8, 12, 16, 20, 25];
+const CURIOSIDADES = {
+  4: "El wombat (Oceanía): hace cacas con forma de cubo. Así no se le caen rodando de las piedras y los troncos donde marca su territorio.",
+  8: "El binturong o gato oso (Asia, la selva): ¡huele a palomitas con mantequilla!",
+  12: "El canguro (Oceanía): no puede andar hacia atrás. Su cola grande y sus patas traseras solo le sirven para ir hacia delante o saltar.",
+  16: "El avestruz (África, la sabana): cada uno de sus ojos es más grande que todo su cerebro. ¡Cada ojo es como una bola de billar!",
+  20: "El camaleón y el cocodrilo (África): el camaleón dispara la lengua y la estira el doble de largo que su cuerpo. El cocodrilo, en cambio, no puede sacar la lengua: la tiene pegada a la boca.",
+  25: "La mariposa (en todo el mundo): no saborea con la boca. ¡Prueba el néctar dulce de las flores con las patas!",
+  30: "La ballena azul (todos los océanos): su corazón es casi tan grande como un coche pequeño y pesa más que tres personas mayores juntas.",
+};
+const CARTAS = [];
+for (let a = 1; a <= 20; a++) for (let b = a; b <= 29; b++) if (a + b <= 30 && (a % 10) + (b % 10) < 10) CARTAS.push([a, b]);
+const mazo = Kit.mazo(CARTAS, c => c[0] + "+" + c[1]);
+const $ = s => document.querySelector(s);
+let pos = 0, aciertos = 0, fallos = 0, fase = "responder", escrito = "", carta = null, hechas = {}, vistas = {};
+
+const W = 128, H = 62, G = 16, X0 = 92;
+function filaY(f) { return 10 + f * (H + G); }
+function forma() {
+  const cel = [], filas = [[1, 7, 1], [9, 15, -1], [17, 23, 1], [25, 30, -1]], curvas = { 8: [0, 1], 16: [1, -1], 24: [2, 1] };
+  filas.forEach((f, i) => {
+    for (let n = f[0]; n <= f[1]; n++) {
+      const k = n - f[0], x = f[2] === 1 ? X0 + k * W : X0 + (6 - k) * W, y = filaY(i);
+      cel[n] = { d: `M${x} ${y}h${W}v${H}h${-W}z`, tx: x + W / 2, ty: y + H / 2 };
+    }
+  });
+  Object.keys(curvas).forEach(n => {
+    const f = curvas[n][0], lado = curvas[n][1], y1 = filaY(f), y2 = filaY(f + 1) + H, cy = (y1 + y2) / 2;
+    const x = lado === 1 ? X0 + 7 * W : X0, ro = (y2 - y1) / 2, ri = ro - H, s = lado === 1 ? 1 : 0;
+    cel[n] = { d: `M${x} ${y1}A${ro} ${ro} 0 0 ${s} ${x} ${y2}v${-H}A${ri} ${ri} 0 0 ${1 - s} ${x} ${y1 + H}z`,
+      tx: x + lado * (ro - H / 2), ty: cy };
+  });
+  return cel;
+}
+const CEL = forma();
+function pintarSerpiente() {
+  const y0 = filaY(0);
+  let s = `<circle class="cabeza" cx="48" cy="${y0 + H / 2}" r="40"/>` +
+    `<circle class="ojo" cx="58" cy="${y0 + 18}" r="11"/><circle class="pupila" cx="61" cy="${y0 + 18}" r="5"/>` +
+    `<circle class="ojo" cx="58" cy="${y0 + 44}" r="11"/><circle class="pupila" cx="61" cy="${y0 + 44}" r="5"/>`;
+  for (let n = 1; n <= 30; n++) {
+    const c = CEL[n], estrella = ESTRELLAS.indexOf(n) >= 0 || n === 30;
+    const clases = ["celda", estrella ? "c5" : "c" + (n % 5)];
+    if (n < pos) clases.push("hecha");
+    if (n === pos) clases.push("aqui");
+    s += `<path class="${clases.join(" ")}" d="${c.d}"/>`;
+    const txt = n === 30 ? "🏆" : estrella ? "⭐" : hechas[n] ? hechas[n] : n === pos + 1 ? "?" : "";
+    s += `<text class="num" x="${c.tx}" y="${c.ty - 14}">${n}</text><text class="op" x="${c.tx}" y="${c.ty + 13}">${txt}</text>`;
+  }
+  $("#serpiente").innerHTML = s;
+}
+function pintarTeclado() {
+  const t = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "⌫"];
+  $("#teclado").innerHTML = t.map(x => `<button type="button" data-t="${x}" aria-label="${x === "⌫" ? "Borrar" : x}">${x}</button>`).join("");
+}
+function mostrar(botones, teclado) {
+  ["comprobar", "seguir"].forEach(b => { $("#" + b).hidden = botones.indexOf(b) < 0; });
+  $("#teclado").hidden = !teclado;
+}
+function pintarPregunta() {
+  $("#pregunta").innerHTML = carta[0] + " + " + carta[1] + ` = <span class="hueco">${escrito || "&nbsp;"}</span>`;
+}
+function avisarProfe() {
+  if (!Kit.esProfe) Kit.profe.publicar({ pos, aciertos, fallos, fase, carta, hechas });
+  pintarProfe();
+}
+function pintarProfe() {
+  $("#profe-ahora").textContent = fase === "fin" ? "¡Ha llegado a la meta! Aciertos: " + aciertos + " · Fallos: " + fallos :
+    fase === "estrella" ? "Casilla " + pos + ": estrella. Cuéntale la curiosidad " + pos + "." :
+    carta ? "Casilla " + (pos + 1) + ": " + carta[0] + " + " + carta[1] + " = " + (carta[0] + carta[1]) + " · Aciertos: " + aciertos + " · Fallos: " + fallos : "";
+  $("#curiosidades").innerHTML = Object.keys(CURIOSIDADES).map(k =>
+    `<li class="${+k === pos ? "ahora" : ""}"><b>${k}.</b> ${CURIOSIDADES[k]}</li>`).join("");
+}
+function siguiente() {
+  const n = pos + 1;
+  if (n === 30) { pos = 30; return terminar(); }
+  if (ESTRELLAS.indexOf(n) >= 0) {
+    pos = n;
+    if (vistas[n]) return siguiente();
+    vistas[n] = true; fase = "estrella";
+    $("#pregunta").textContent = "⭐ ¡Una estrella!";
+    $("#mensaje").textContent = "Pregúntale a la profe: te contará una curiosidad de un animal.";
+    $("#consigna").textContent = "Casilla " + n + ".";
+    mostrar(["seguir"], false);
+    pintarSerpiente(); avisarProfe();
+    return;
+  }
+  const c = mazo.sacar();
+  carta = Math.random() < 0.5 ? [c[0], c[1]] : [c[1], c[0]];
+  fase = "responder"; escrito = "";
+  pintarPregunta();
+  $("#consigna").textContent = "Casilla " + n + ". Resuelve la suma para avanzar.";
+  mostrar(["comprobar"], true);
+  pintarSerpiente(); avisarProfe();
+}
+function teclear(x) {
+  if (fase !== "responder") return;
+  if (x === "⌫") escrito = escrito.slice(0, -1);
+  else if (escrito.length < 3) escrito += x;
+  pintarPregunta();
+}
+function comprobar() {
+  if (fase !== "responder") return;
+  if (!escrito) return Kit.casi("Escribe el resultado");
+  if (+escrito === carta[0] + carta[1]) {
+    aciertos++; pos++;
+    hechas[pos] = carta[0] + "+" + carta[1];
+    Kit.bien("¡Muy bien! Avanzas a la casilla " + pos);
+    $("#mensaje").textContent = "¡Bien! Sigue con la siguiente.";
+  } else {
+    fallos++;
+    delete hechas[pos];
+    pos = Math.max(0, pos - 1);
+    Kit.casi(pos ? "¡Casi! Vuelves a la casilla " + pos : "¡Casi! Vuelves a la salida");
+    $("#mensaje").textContent = "Retrocedes una casilla. ¡Sigue!";
+  }
+  siguiente();
+}
+function seguir() {
+  if (fase !== "estrella") return;
+  $("#mensaje").textContent = "";
+  siguiente();
+}
+function terminar() {
+  fase = "fin";
+  $("#consigna").textContent = "¡Has llegado a la cueva del tesoro! 🏆";
+  $("#pregunta").innerHTML = "✓ Aciertos: " + aciertos + " &nbsp; · &nbsp; ↻ Fallos: " + fallos;
+  $("#mensaje").textContent = "¡Lo has conseguido! Pregúntale a la profe la última curiosidad.";
+  mostrar([], false);
+  pintarSerpiente();
+  Kit.bien("¡Has llegado a la meta!");
+  avisarProfe();
+}
+function empezar() {
+  pos = 0; aciertos = 0; fallos = 0; escrito = ""; hechas = {}; vistas = {};
+  mazo.reiniciar();
+  $("#mensaje").textContent = "Si aciertas, avanzas. Si no, retrocedes una casilla.";
+  siguiente();
+}
+$("#teclado").addEventListener("click", e => { const b = e.target.closest("button"); if (b) teclear(b.dataset.t); });
+$("#comprobar").addEventListener("click", comprobar);
+$("#seguir").addEventListener("click", seguir);
+$("#reiniciar").addEventListener("click", empezar);
+const principal = () => { if (fase === "responder") comprobar(); else if (fase === "estrella") seguir(); };
+const mapa = { "r": empezar, "ArrowRight": principal, "Enter": principal, " ": principal, "Backspace": () => teclear("⌫") };
+"0123456789".split("").forEach(n => { mapa[n] = () => teclear(n); });
+Kit.teclas(mapa);
+Kit.profe.escuchar(e => { if (!Kit.esProfe || !e) return; pos = e.pos; aciertos = e.aciertos; fallos = e.fallos; fase = e.fase; carta = e.carta; hechas = e.hechas || {}; pintarSerpiente(); pintarProfe(); });
+pintarTeclado();
+empezar();
+</script>
+</body></html>
