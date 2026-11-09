@@ -132,7 +132,7 @@ body.k-profe .k-herramientas { top: 46px; }
 .ejemplo[hidden] { display: none; }
 .preguntas { margin: 8px 0 0; display: flex; gap: 28px; justify-content: center; font-size: var(--t-base); color: var(--texto-suave); }
 #opciones:empty { display: none; }
-#accion[hidden] { display: none; }
+#accion[hidden], #pista[hidden] { display: none; }
 #profe { position: fixed; top: 150px; left: 50%; transform: translateX(-50%); width: min(820px, 90vw); font-size: var(--t-peque); padding: 8px 22px; }
 #profe p { margin: 4px 0; }
 </style></head>
@@ -151,6 +151,7 @@ body.k-profe .k-herramientas { top: 46px; }
   </section>
   <footer class="k-pie">
     <button class="k-btn" type="button" id="reiniciar">↺ Empezar de nuevo</button>
+    <button class="k-btn" type="button" id="pista" hidden>🔸 Otra pista</button>
     <button class="k-btn" type="button" id="accion"></button>
     <button class="k-btn k-principal" type="button" id="siguiente">🎲 Siguiente reto</button>
   </footer>
@@ -402,7 +403,12 @@ const TIPOS = {
 const ORDEN = Kit.mazo(["frase", "verbo", "parte", "adivina", "mover"], x => x);
 const META = 12;
 const $ = s => document.querySelector(s);
-let reto = null, hechas = 0, elegida = -1, pistas = 1, resuelto = false;
+let reto = null, hechas = 0, elegida = -1, pistas = 1, resuelto = false, animales = [];
+function nombre(a) { return a.e + " " + a.r.replace(/^(el|la) /, ""); }
+function barajarAnimales(d) {
+  const otros = Kit.barajar(ADIVINANZAS.filter(x => x !== d)).slice(0, 3);
+  animales = Kit.barajar(otros.concat([d])).map(x => x.r);
+}
 
 function opciones(lista) {
   $("#opciones").innerHTML = lista.map((t, k) =>
@@ -418,6 +424,7 @@ function pintar() {
   $("#progreso").innerHTML = Array.from({ length: META }, (_, k) => `<i class="${k < hechas ? "k-hecho" : ""}"></i>`).join("");
   $("#opciones").innerHTML = "";
   $("#ejemplo").hidden = reto.tipo !== "frase";
+  $("#pista").hidden = true;
   elegida = -1;
   if (reto.tipo === "frase") {
     $("#zona").innerHTML = `<div class="cartas"><div class="k-tarjeta carta"><p class="rotulo">El verbo</p><p class="emoji" aria-hidden="true">${d.e}</p><p class="palabra">${d.v}</p></div>` +
@@ -434,9 +441,10 @@ function pintar() {
     opciones(PREG); accion("Comprobar");
     $("#solucion").textContent = "«" + d.m + "» responde a " + PREG[d.ok];
   } else if (reto.tipo === "adivina") {
-    $("#zona").innerHTML = `<ul class="pistas">${d.p.slice(0, pistas).map(x => `<li>🔸 ${x}</li>`).join("")}</ul>` +
-      (resuelto ? `<p class="respuesta">${d.e} ¡Soy ${d.r}!</p>` : "");
-    accion(resuelto ? "" : pistas < d.p.length ? "🔸 Otra pista" : "👀 Ver quién soy");
+    $("#zona").innerHTML = `<ul class="pistas">${d.p.slice(0, pistas).map(x => `<li>🔸 ${x}</li>`).join("")}</ul>`;
+    opciones(animales.map(r => nombre(ADIVINANZAS.filter(x => x.r === r)[0])));
+    $("#pista").hidden = pistas >= d.p.length;
+    accion("Comprobar");
     $("#solucion").textContent = "Es " + d.r + " " + d.e;
   } else {
     $("#zona").innerHTML = `<p class="emoji" aria-hidden="true">${d.e}</p><p class="frase">${d.t}</p>`;
@@ -451,14 +459,10 @@ function hacerAccion() {
   const d = reto.d;
   if (reto.tipo === "frase") return sumar("¡Frase completa!");
   if (reto.tipo === "mover") return sumar("¡Qué bien os movéis!");
-  if (reto.tipo === "adivina") {
-    if (resuelto) return;
-    if (pistas < d.p.length) { pistas++; pintar(); avisar(); return; }
-    return Kit.conClave(() => sumar("¡Era " + d.r + "!"));
-  }
   if (elegida < 0) return Kit.casi("Elige una respuesta");
   const b = document.querySelector(`.k-opcion[data-k="${elegida}"]`);
-  if (elegida === d.ok) { if (!resuelto) { hechas = Math.min(META, hechas + 1); resuelto = true; avisar(); } b.classList.add("k-ok"); Kit.bien(); }
+  const ok = reto.tipo === "adivina" ? animales.indexOf(d.r) : d.ok;
+  if (elegida === ok) { if (!resuelto) { hechas = Math.min(META, hechas + 1); resuelto = true; avisar(); } b.classList.add("k-ok"); Kit.bien(); }
   else { b.classList.add("k-otra"); Kit.casi(); }
   $("#progreso").innerHTML = Array.from({ length: META }, (_, k) => `<i class="${k < hechas ? "k-hecho" : ""}"></i>`).join("");
 }
@@ -467,11 +471,17 @@ function elegir(k) {
   elegida = k;
   document.querySelectorAll(".k-opcion").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.k === k)));
 }
-function avisar() { Kit.profe.publicar({ tipo: reto.tipo, clave: clave(reto), hechas: hechas, pistas: pistas, resuelto: resuelto }); }
+function otraPista() {
+  if (reto.tipo !== "adivina" || pistas >= reto.d.p.length) return;
+  const k = elegida; pistas++; pintar(); if (k >= 0) elegir(k); avisar();
+}
+function avisar() { Kit.profe.publicar({ tipo: reto.tipo, clave: clave(reto), hechas: hechas, pistas: pistas, resuelto: resuelto, animales: animales }); }
 function clave(r) { const d = r.d; return d.v || d.f || d.m || d.r || d.t; }
 function siguiente(publicar = true) {
   const tipo = ORDEN.sacar();
-  reto = { tipo: tipo, d: TIPOS[tipo].m.sacar() }; pistas = 1; resuelto = false; pintar();
+  reto = { tipo: tipo, d: TIPOS[tipo].m.sacar() }; pistas = 1; resuelto = false;
+  if (tipo === "adivina") barajarAnimales(reto.d);
+  pintar();
   if (publicar) avisar();
 }
 function reiniciar() {
@@ -479,15 +489,18 @@ function reiniciar() {
 }
 $("#opciones").addEventListener("click", e => { const b = e.target.closest(".k-opcion"); if (b) elegir(+b.dataset.k); });
 $("#accion").addEventListener("click", hacerAccion);
+$("#pista").addEventListener("click", otraPista);
 $("#siguiente").addEventListener("click", () => siguiente());
 $("#reiniciar").addEventListener("click", reiniciar);
 Kit.teclas({ "1": () => elegir(0), "2": () => elegir(1), "3": () => elegir(2), "4": () => elegir(3),
-  " ": hacerAccion, "ArrowRight": () => siguiente(), "r": reiniciar });
+  " ": hacerAccion, "a": otraPista, "ArrowRight": () => siguiente(), "r": reiniciar });
 const LISTAS = { frase: FRASES, verbo: VERBOS, parte: PARTES, adivina: ADIVINANZAS, mover: MOVER };
 Kit.profe.escuchar(e => {
   const lista = LISTAS[e.tipo]; if (!lista) return;
   const d = lista.filter(x => clave({ d: x }) === e.clave)[0]; if (!d) return;
-  reto = { tipo: e.tipo, d: d }; hechas = e.hechas || 0; pistas = e.pistas || 1; resuelto = !!e.resuelto; pintar();
+  reto = { tipo: e.tipo, d: d }; hechas = e.hechas || 0; pistas = e.pistas || 1; resuelto = !!e.resuelto;
+  if (e.animales && e.animales.length) animales = e.animales; else if (e.tipo === "adivina") barajarAnimales(d);
+  pintar();
 });
 siguiente(false);
 </script>
