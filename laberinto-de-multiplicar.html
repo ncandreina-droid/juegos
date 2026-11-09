@@ -23,7 +23,8 @@
   --text: "Playwrite ES", "Playwrite España", "Chalkboard SE", "Comic Sans MS", cursive;
   --num: ui-rounded, "Arial Rounded MT Bold", "Nunito", "Trebuchet MS", "Segoe UI", sans-serif;
   /* Tamaño de cada casilla: el tablero (12 × 9) siempre cabe en la pantalla. */
-  --c: min(calc((100vw - 400px) / 12), calc((100vh - 130px) / 9), 92px);
+  --c: 60px; /* si el navegador es antiguo y no entiende min() */
+  --c: min(calc((100vw - 410px) / 12), calc((100vh - 140px) / 9), 92px);
 }
 * { box-sizing: border-box; }
 body { margin: 0; min-height: 100vh; color: var(--ink); font-family: var(--text); font-weight: 400; font-size: clamp(14px, 1.25vw, 20px); line-height: 1.9;
@@ -40,7 +41,7 @@ button:disabled { opacity: .5; cursor: default; transform: none; }
 main { display: flex; justify-content: center; align-items: flex-start; gap: 18px; padding: 8px 12px 16px; }
 
 /* El laberinto */
-#tablero { position: relative; flex: none; width: calc(var(--c) * 12); height: calc(var(--c) * 9); background: var(--seto); border: 5px solid #6dbb86; border-radius: 22px; box-shadow: 0 .4em 0 rgba(47,42,74,.15); overflow: hidden; }
+#tablero { position: relative; flex: none; width: calc(var(--c) * 12 + 10px); height: calc(var(--c) * 9 + 10px); background: var(--seto); border: 5px solid #6dbb86; border-radius: 22px; box-shadow: 0 .4em 0 rgba(47,42,74,.15); overflow: hidden; }
 #tablero > * { position: absolute; left: calc(var(--c) * var(--x)); top: calc(var(--c) * var(--y)); }
 .seto { width: var(--c); height: var(--c); display: grid; place-items: center; font-size: calc(var(--c) * .5); line-height: 1; opacity: .8; }
 .t { width: calc(var(--c) - 8px); height: calc(var(--c) - 8px); margin: 4px; z-index: 2; display: grid; place-items: center; border-radius: 26%; background: #fff; border: 3px solid var(--col); font-family: var(--num); font-weight: 700; font-size: calc(var(--c) * .3); line-height: 1; white-space: nowrap; transition: background .3s, opacity .3s; }
@@ -74,12 +75,20 @@ aside h2 { font-size: 1.15em; font-weight: 400; margin: 0 0 .3em; }
 .op input { width: 2.4em; font: inherit; text-align: center; color: var(--ink); border: .08em solid var(--ink); border-radius: .25em; padding: 0; background: #fff; }
 .op input:focus { outline: .1em solid var(--sky); }
 .op input:disabled { background: var(--amarillo); }
+/* Teclado de números en pantalla: solo en tabletas, para no depender del teclado del sistema. */
+.teclas { display: none; }
+@media (pointer: coarse) {
+  .teclas { display: grid; grid-template-columns: repeat(3, 1fr); grid-gap: .4em; max-width: 15em; margin: .2em auto .5em; }
+  .teclas button { font-family: var(--num); font-weight: 700; font-size: 1.6em; line-height: 1.6; padding: 0; border-radius: .5em; touch-action: manipulation; -webkit-user-select: none; user-select: none; }
+  .teclas .ok { background: var(--verde); font-size: 1.1em; }
+  #bListo { display: none; }
+}
 #msg { min-height: 3.8em; margin: .4em 0 0; line-height: 1.8; }
 #msg b { font-family: var(--num); font-size: 1.5em; }
 .oculto { display: none !important; }
 
 /* Celebración */
-#fiesta { display: none; position: fixed; inset: 0; background: rgba(47,42,74,.88); color: #fff; text-align: center; flex-direction: column; justify-content: center; align-items: center; gap: .3em; padding: 1em; z-index: 9; }
+#fiesta { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; background: rgba(47,42,74,.88); color: #fff; text-align: center; flex-direction: column; justify-content: center; align-items: center; gap: .3em; padding: 1em; z-index: 9; }
 #fiesta.on { display: flex; animation: entra .4s ease; }
 @keyframes entra { from { opacity: 0; } to { opacity: 1; } }
 #fiesta .e { font-size: 5.5em; line-height: 1.2; animation: salta 1s ease-in-out infinite alternate; }
@@ -94,7 +103,7 @@ aside h2 { font-size: 1.15em; font-weight: 400; margin: 0 0 .3em; }
 #correoMsg { width: 100%; min-height: 1.9em; font-size: .9em !important; }
 
 @media (max-width: 900px) {
-  :root { --c: calc((100vw - 34px) / 12); }
+  :root { --c: calc((100vw - 44px) / 12); }
   main { flex-direction: column; align-items: center; }
   aside { width: 100%; max-width: 520px; }
 }
@@ -122,6 +131,7 @@ aside h2 { font-size: 1.15em; font-weight: 400; margin: 0 0 .3em; }
 
       <div id="pregunta">
         <div class="op"><span id="opTxt"></span><input id="resp" type="text" inputmode="numeric" maxlength="3" autocomplete="off" aria-label="Tu respuesta"></div>
+        <div class="teclas" id="teclas"></div>
         <button id="bListo">✅ ¡Listo!</button>
       </div>
 
@@ -142,10 +152,10 @@ aside h2 { font-size: 1.15em; font-weight: 400; margin: 0 0 .3em; }
   <p id="fiestaCamino"></p>
   <p id="fiestaEstrellas"></p>
   <p id="fiestaTxt"></p>
-  <p class="avisa">📣 ¡Avisa a la profe Andy!</p>
+  <p class="avisa">📣 ¡Avísame!</p>
   <div id="correo" class="oculto">
     <input id="nombre" type="text" maxlength="30" autocomplete="off" placeholder="Escribe tu nombre" aria-label="Tu nombre">
-    <button id="bAvisar">📧 Avisar a la profe Andy</button>
+    <button id="bAvisar">📧 Avisarme por correo</button>
     <p id="correoMsg"></p>
   </div>
   <button id="bOtra" class="suave">🚀 Jugar otra vez</button>
@@ -153,7 +163,7 @@ aside h2 { font-size: 1.15em; font-weight: 400; margin: 0 0 .3em; }
 
 <script>
 // ---- Ajustes para la profe ----
-const CORREO_PROFE = 'andyclases@proton.me';        // correo de la profe; mientras esté vacío, el botón «Avisar a la profe Andy» no aparece
+const CORREO_PROFE = 'andyclases@proton.me';        // correo de la profe; mientras esté vacío, el botón «Avisarme por correo» no aparece
 const ESPERA = 10;                 // segundos del «turno de espera» cuando fallan
 const ESTRELLAS = [4, 9, 14];      // en qué casillas del camino hay estrella (cada cuatro multiplicaciones)
 
@@ -298,6 +308,22 @@ CAMINOS.forEach((cam, k) => {
   $('#caminos').appendChild(b);
 });
 $('#bListo').onclick = comprueba;
+// Tabletas: teclado de números propio; la casilla no abre el teclado del sistema (tapaba media pantalla).
+const tactil = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+if (tactil) $('#resp').readOnly = true;
+['1', '2', '3', '4', '5', '6', '7', '8', '9', '⌫', '0', '✅'].forEach(k => {
+  const b = document.createElement('button'); b.type = 'button'; b.textContent = k;
+  if (k === '✅') b.className = 'ok';
+  if (k === '⌫') b.setAttribute('aria-label', 'Borrar');
+  b.onclick = () => {
+    const inp = $('#resp');
+    if (inp.disabled) return;
+    if (k === '✅') comprueba();
+    else if (k === '⌫') inp.value = inp.value.slice(0, -1);
+    else if (inp.value.length < 3) inp.value += k;
+  };
+  $('#teclas').appendChild(b);
+});
 $('#resp').addEventListener('keydown', e => { if (e.key === 'Enter') comprueba(); });
 $('#resp').addEventListener('input', e => { e.target.value = e.target.value.replace(/\D/g, ''); });
 $('#bEstrella').onclick = () => {
@@ -316,7 +342,7 @@ $('#bAvisar').onclick = () => {
   const asunto = 'Laberinto completado: ' + nombre;
   const cuerpo = nombre + ' ha completado el laberinto de multiplicar.\n\nFecha: ' + cuando;
   window.location.href = 'mailto:' + CORREO_PROFE + '?subject=' + encodeURIComponent(asunto) + '&body=' + encodeURIComponent(cuerpo);
-  $('#correoMsg').textContent = 'Se ha abierto tu correo: pulsa «Enviar» para avisar a la profe Andy.';
+  $('#correoMsg').textContent = 'Se ha abierto tu correo: pulsa «Enviar» para avisarme.';
 };
 $('#bNuevo').onclick = monta;
 $('#bOtra').onclick = monta;
