@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="es" data-tema="otono"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="asignatura" content="Matemáticas">
+<title>Mis estrellas del examen</title>
+<style id="kit">
+
+:root, [data-tema="clasico"] {
+  --h: 330; --h2: 280;
+  --fondo: oklch(0.975 0.012 var(--h));
+  --superficie: oklch(0.995 0.004 var(--h));
+  --texto: oklch(0.25 0.03 var(--h2));
+  --texto-suave: oklch(0.43 0.03 var(--h2));
+  --acento: oklch(0.47 0.15 var(--h));
+  --acento-texto: oklch(0.995 0.004 var(--h));
+  --bien: oklch(0.50 0.12 150);
+  --casi: oklch(0.55 0.13 70);
+  --borde: oklch(0.86 0.02 var(--h));
+  --motivo: "✿";
+}
+[data-tema="oceano"]   { --h: 220; --h2: 240; --motivo: "≈"; }
+[data-tema="selva"]    { --h: 145; --h2: 160; --motivo: "❦"; }
+[data-tema="espacio"]  { --h: 285; --h2: 270; --motivo: "✦"; }
+[data-tema="otono"]    { --h: 45;  --h2: 30;  --motivo: "❧"; }
+[data-tema="invierno"] { --h: 235; --h2: 250; --motivo: "❄"; }
+[data-tema="primavera"]{ --h: 350; --h2: 330; --motivo: "❀"; }
+[data-tema="selva"] { --bien: oklch(0.50 0.12 200); }
+
+:root {
+  --t-base: 28px; --t-peque: 22px; --t-titulo: 48px; --t-grande: 64px;
+  --radio: 18px; --sombra: 0 6px 0 var(--borde);
+  --sistema: ui-rounded, "SF Pro Rounded", "Avenir Next", "Helvetica Neue", system-ui, sans-serif;
+  --margen: 40px; --margen-abajo: 88px;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+  background: var(--fondo); color: var(--texto); font: 500 var(--t-base)/1.35 var(--sistema);
+  -webkit-font-smoothing: antialiased; overflow: hidden;
+}
+[data-letra="ligada"] { font-family: "Playwrite ES", cursive; font-weight: 400; }
+:focus-visible { outline: 4px solid var(--acento); outline-offset: 4px; border-radius: 10px; }
+
+.k-escena { height: 100vh; display: grid; grid-template-rows: auto 1fr auto; gap: 16px;
+  padding: 84px var(--margen) var(--margen-abajo); position: relative; }
+.k-escena::before, .k-escena::after { content: var(--motivo); position: absolute; font-size: 56px; color: var(--borde);
+  pointer-events: none; }
+.k-escena::before { bottom: 18px; left: 22px; transform: rotate(-14deg); } .k-escena::after { bottom: 18px; right: 22px; transform: rotate(18deg); }
+.k-cabecera { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.k-titulo { font-size: var(--t-titulo); line-height: 1.05; margin: 0; letter-spacing: -0.01em; }
+.k-consigna { font-size: var(--t-base); color: var(--texto-suave); margin: 6px 0 0; }
+.k-centro { display: grid; place-items: center; min-height: 0; }
+.k-pie { display: flex; justify-content: center; gap: 16px; align-items: center; }
+
+.k-btn { min-height: 64px; min-width: 64px; padding: 0 26px; border-radius: 999px; border: 3px solid var(--texto);
+  background: var(--superficie); color: var(--texto); font: 700 var(--t-peque)/1 var(--sistema); cursor: pointer;
+  box-shadow: 0 4px 0 var(--texto); transition: transform .12s, box-shadow .12s; }
+.k-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--texto); }
+.k-btn.k-principal { background: var(--acento); color: var(--acento-texto); border-color: var(--acento); box-shadow: 0 4px 0 var(--texto); }
+.k-btn.k-pequeno { min-height: 48px; font-size: 18px; padding: 0 16px; }
+.k-tarjeta { background: var(--superficie); border: 3px solid var(--borde); border-radius: var(--radio);
+  padding: 18px 22px; box-shadow: var(--sombra); }
+.k-opciones { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; width: min(100%, 1000px); }
+.k-opcion { min-height: 96px; font-size: var(--t-base); text-align: center; border: 3px solid var(--texto);
+  border-radius: var(--radio); background: var(--superficie); color: var(--texto); cursor: pointer; padding: 14px;
+  box-shadow: 0 5px 0 var(--texto); transition: transform .12s; position: relative; font-family: inherit; font-weight: 600; }
+.k-opcion .k-num { position: absolute; top: 8px; left: 12px; font-size: 16px; color: var(--texto-suave); }
+.k-opcion[aria-pressed="true"], .k-sel { outline: 5px solid var(--acento); outline-offset: 3px; }
+.k-opcion.k-ok { border-color: var(--bien); box-shadow: 0 5px 0 var(--bien); }
+.k-opcion.k-otra { border-style: dashed; border-color: var(--casi); box-shadow: none; }
+
+.k-aviso { position: fixed; left: 50%; top: 20px; transform: translate(-50%, -16px); opacity: 0; z-index: 8; pointer-events: none;
+  padding: 14px 26px; border-radius: 999px; font: 700 var(--t-base)/1 var(--sistema); background: var(--superficie);
+  border: 3px solid currentColor; transition: opacity .2s, transform .2s; }
+.k-aviso.k-ver { opacity: 1; transform: translate(-50%, 0); }
+.k-aviso.k-bien { color: var(--bien); } .k-aviso.k-casi { color: var(--casi); }
+.k-envio { position: fixed; z-index: 7; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 880px; max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 32px); overflow: auto; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 12px 48px var(--borde); }
+.k-envio[hidden] { display: none; }
+.k-envio h2 { margin: 0; font-size: var(--t-base); }
+.k-envio label { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; }
+.k-envio input { font: inherit; min-height: 64px; padding: 0 18px; border: 3px solid var(--texto); border-radius: var(--radio); background: var(--superficie); color: var(--texto); width: 12em; max-width: 100%; }
+.k-envio textarea { font: inherit; font-size: var(--t-peque); padding: 12px; border: 3px solid var(--borde); border-radius: var(--radio); background: var(--fondo); color: var(--texto); resize: none; }
+.k-envio-botones { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+.k-envio small { font-size: var(--t-peque); color: var(--texto-suave); }
+.k-progreso { display: flex; gap: 10px; }
+.k-progreso i { width: 18px; height: 18px; border-radius: 50%; border: 3px solid var(--texto-suave); }
+.k-progreso i.k-hecho { background: var(--bien); border-color: var(--bien); }
+.k-progreso i.k-ahora { border-color: var(--acento); background: var(--acento); }
+.k-confeti { position: fixed; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none; overflow: hidden; }
+.k-confeti span { position: absolute; top: -40px; font-size: 34px; animation: k-cae 1.4s ease-in forwards; }
+@keyframes k-cae { to { transform: translateY(110vh) rotate(260deg); } }
+
+[data-profe] { display: none !important; }
+body.k-profe [data-profe] { display: revert !important; }
+body.k-profe { overflow: auto; }
+body.k-profe::before { content: "Vista profe · los niños no ven esto"; position: fixed; top: 0; left: 0; right: 0; z-index: 9;
+  background: var(--texto); color: var(--fondo); font: 700 16px/1 var(--sistema); padding: 8px 14px; text-align: center; }
+.k-solucion { color: var(--bien); font-weight: 700; }
+body.k-profe .k-herramientas { top: 46px; }
+
+.k-herramientas { position: fixed; top: 14px; right: 16px; display: flex; gap: 8px; z-index: 5; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+@media (max-width: 760px) { :root { --t-base: 22px; --t-titulo: 34px; --margen: 16px; --margen-abajo: 24px; } body { overflow: auto; } .k-escena { height: auto; min-height: 100vh; } }
+@media print {
+  @page { size: A4; margin: 14mm; }
+  body { overflow: visible; background: #fff; }
+  .k-escena { height: auto; padding: 0; } .k-escena::before, .k-escena::after { display: none; }
+  .k-herramientas, .k-pie, .k-aviso, .k-envio, [data-profe] { display: none !important; }
+  .k-imprimir-nombre { display: flex !important; gap: 12mm; font-size: 12pt; margin-bottom: 6mm; }
+  .k-imprimir-nombre span { flex: 1; border-bottom: .4mm solid #000; }
+}
+.k-imprimir-nombre { display: none; }
+</style>
+<style id="pagina">
+#centro { flex-direction: column; gap: 18px; }
+#inicio { display: flex; flex-wrap: wrap; gap: 24px; justify-content: center; align-items: center; }
+#inicio[hidden], #juego[hidden], #fin[hidden] { display: none; }
+#juego { display: flex; flex-direction: column; align-items: center; gap: 18px; width: 100%; }
+.k-version { font-size: var(--t-grande); padding: 0 48px; }
+#op { font-size: var(--t-grande); font-weight: 700; padding: 14px 48px; margin: 0; font-variant-numeric: tabular-nums; }
+#op small { display: block; font-size: var(--t-peque); font-weight: 400; color: var(--texto-suave); }
+.k-ayuda { flex-basis: 100%; text-align: center; color: var(--texto-suave); font-size: var(--t-peque); margin: 0; }
+#fin { max-width: 860px; font-size: var(--t-base); text-align: center; }
+#fin .estrellas { font-size: var(--t-base); letter-spacing: 2px; margin: 0 0 8px; }
+#progreso { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 6px; max-width: 900px; font-size: var(--t-peque); color: var(--texto-suave); }
+#progreso:empty { display: none; }
+#progreso span { min-width: 1.3em; text-align: center; }
+#profe { position: fixed; top: 178px; left: 50%; transform: translateX(-50%); width: min(720px, 90vw); font-size: var(--t-peque); padding: 10px 22px; }
+</style></head>
+<body>
+<div class="k-imprimir-nombre"><span>Nombre</span><span>Fecha</span></div>
+<main class="k-escena">
+  <header class="k-cabecera">
+    <div><h1 class="k-titulo">Mis estrellas del examen</h1><p class="k-consigna" id="consigna">¿Qué versión de examen tienes?</p></div>
+  </header>
+  <section class="k-centro" id="centro">
+    <div id="progreso" aria-label="Progreso"></div>
+    <div id="inicio">
+      <button class="k-btn k-principal k-version" type="button" data-v="A">Versión A</button>
+      <button class="k-btn k-principal k-version" type="button" data-v="B">Versión B</button>
+      <p class="k-ayuda">Haz primero el ejercicio en tu cuaderno. Luego marca aquí el resultado que te ha dado.</p>
+    </div>
+    <div id="juego" hidden>
+      <p id="op" class="k-tarjeta"></p>
+      <div class="k-opciones" id="opciones" role="group" aria-label="Respuestas"></div>
+    </div>
+    <div id="fin" class="k-tarjeta" hidden></div>
+  </section>
+  <footer class="k-pie">
+    <button class="k-btn k-principal" type="button" id="comprobar" hidden>Comprobar</button>
+    <button class="k-btn" type="button" id="enviar">📩 Enviar a la profe</button>
+    <button class="k-btn" type="button" id="reiniciar">↺ Empezar de nuevo</button>
+  </footer>
+  <aside class="k-tarjeta" data-profe id="profe"><p>Para la profe: cada niño lo usa en su casa, a su ritmo. Respuesta de este ejercicio: <span class="k-solucion" id="solucion">—</span></p></aside>
+</main>
+<script id="clave-familias">var ClaveFamilias = (function () {
+  var HASH = "6e63e187b24540db3a4df7451f85581ec3ea9a3fa72a4200b77890e9eff06a33";
+  var local = location.protocol === "file:";
+  var marca = "clave-familias";
+  function ok() { try { return sessionStorage.getItem(marca) === HASH; } catch (e) { return false; } }
+  function huella(t) {
+    if (!window.crypto || !crypto.subtle) return Promise.resolve("");
+    return crypto.subtle.digest("SHA-256", new TextEncoder().encode(t.trim().toLowerCase().replace(/\s+/g, "")))
+      .then(function (b) { return Array.from(new Uint8Array(b), function (x) { return x.toString(16).padStart(2, "0"); }).join(""); });
+  }
+  function pedir(fn, si_no) {
+    if (local || ok()) { fn(); return; }
+    var fondo = document.createElement("div");
+    fondo.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(42,31,45,.45);padding:1rem";
+    fondo.innerHTML = '<form role="dialog" aria-modal="true" aria-label="Código de las familias" style="display:grid;gap:.8rem;border:3px solid #2a1f2d;border-radius:18px;padding:1.5rem;max-width:22rem;width:100%;box-sizing:border-box;font:20px/1.4 ui-rounded,\'Avenir Next\',system-ui,sans-serif;color:#2a1f2d;background:#fffdf8">' +
+      '<strong style="font-size:1.2em">🔒 Esto es para hacerlo con un adulto</strong>' +
+      '<label>Escribe el código de las familias<input type="password" autocomplete="off" style="display:block;width:100%;box-sizing:border-box;margin-top:.4rem;font:inherit;padding:.5rem .7rem;border:2px solid #2a1f2d;border-radius:10px"></label>' +
+      '<span class="cf-msg" aria-live="polite" style="min-height:1.4em;color:#9b2f66"></span>' +
+      '<span style="display:flex;justify-content:flex-end">' +
+      '<button class="cf-no" type="button" style="font:inherit;padding:.5rem 1rem;margin-right:.6rem;border-radius:10px;border:2px solid #2a1f2d;background:#fff;color:#2a1f2d">Cancelar</button>' +
+      '<button type="submit" style="font:inherit;padding:.5rem 1rem;border-radius:10px;border:2px solid #2a1f2d;background:#2a1f2d;color:#fff">Entrar</button></span></form>';
+    var form = fondo.querySelector("form");
+    var input =  (fondo.querySelector("input"));
+    var msg =  (fondo.querySelector(".cf-msg"));
+    function cerrar(si) {
+      document.removeEventListener("keydown", esc, true);
+      if (fondo.parentNode) fondo.parentNode.removeChild(fondo);
+      if (si) fn(); else if (si_no) si_no();
+    }
+    function esc(e) { if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); cerrar(false); } else e.stopPropagation(); }
+    fondo.querySelector(".cf-no").addEventListener("click", function () { cerrar(false); });
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      huella(input.value).then(function (h) {
+        if (h === HASH) {
+          try { sessionStorage.setItem(marca, HASH); } catch (_) {  }
+          cerrar(true);
+        } else { msg.textContent = "Ese no es. Pídeselo a un adulto de casa."; input.select(); }
+      });
+    });
+    document.addEventListener("keydown", esc, true);
+    document.body.appendChild(fondo); input.focus();
+  }
+  return { pedir: pedir, abierta: function () { return local || ok(); } };
+})();
+</script>
+<script id="kit">"use strict";
+const Kit = (() => {
+  const esProfe = location.hash === "#profe";
+  const clave = "kit:" + location.pathname;
+  let sonido = false, ctx =  (null), aviso =  (null);
+  const teclas =  ({});
+
+  function nota(f, t) {
+    if (!sonido) return;
+    ctx = ctx || new AudioContext();
+    const o = ctx.createOscillator(), g = ctx.createGain(), t0 = ctx.currentTime + t;
+    o.type = "sine"; o.frequency.value = f; o.connect(g); g.connect(ctx.destination);
+    g.gain.setValueAtTime(0, t0); g.gain.linearRampToValueAtTime(0.05, t0 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.3); o.start(t0); o.stop(t0 + 0.32);
+  }
+  function avisar(texto, tipo) {
+    if (!aviso) { aviso = document.createElement("div"); aviso.className = "k-aviso"; aviso.setAttribute("role", "status"); document.body.append(aviso); }
+    aviso.className = "k-aviso " + tipo; aviso.textContent = texto;
+    requestAnimationFrame(() => aviso && aviso.classList.add("k-ver"));
+    clearTimeout( (avisar).t);
+     (avisar).t = setTimeout(() => aviso && aviso.classList.remove("k-ver"), 1800);
+  }
+  function celebrar() {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const c = document.createElement("div"); c.className = "k-confeti";
+    const m = getComputedStyle(document.documentElement).getPropertyValue("--motivo").replace(/"/g, "").trim() || "✿";
+    for (let i = 0; i < 14; i++) {
+      const s = document.createElement("span"); s.textContent = i % 3 ? m : "⭐";
+      s.style.left = (5 + Math.random() * 90) + "vw"; s.style.animationDelay = (Math.random() * 0.3) + "s";
+      c.append(s);
+    }
+    document.body.append(c); setTimeout(() => c.remove(), 1600);
+  }
+
+  const api = {
+    esProfe,
+    barajar(a) { const b = a.slice(); for (let i = b.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [b[i], b[j]] = [b[j], b[i]]; } return b; },
+    mazo(cartas, igual = c => JSON.stringify(c)) {
+      let monton =  ([]), ultima = "";
+      const sacar = () => {
+        if (!monton.length) monton = api.barajar(cartas);
+        let k = monton.findIndex(c => igual(c) !== ultima);
+        if (k < 0) { monton = api.barajar(cartas); k = Math.max(0, monton.findIndex(c => igual(c) !== ultima)); }
+        const c = monton.splice(k, 1)[0]; ultima = igual(c); return c;
+      };
+      return { sacar, reiniciar() { monton = []; ultima = ""; } };
+    },
+    enviarProfe(o) {
+      const d = document.createElement("div"); d.className = "k-tarjeta k-envio"; d.hidden = true;
+      d.setAttribute("role", "dialog"); d.setAttribute("aria-modal", "true"); d.setAttribute("aria-label", "Enviar a la profe");
+      d.innerHTML = '<h2>📩 Enviar a la profe</h2><label>Tu nombre <input type="text" autocomplete="off" maxlength="30"></label>' +
+        '<textarea readonly rows="6" aria-label="El mensaje para la profe"></textarea><div class="k-envio-botones">' +
+        '<button class="k-btn k-principal" type="button" data-k="correo">📧 Abrir el correo</button>' +
+        '<button class="k-btn" type="button" data-k="copiar">📋 Copiar el mensaje</button>' +
+        '<button class="k-btn" type="button" data-k="cerrar">Volver al juego</button></div>' +
+        "<small>Si no se abre el correo, pulsa «Copiar el mensaje» y pégalo en Telegram o en un correo a " + o.correo + ".</small>";
+      const nombre =  (d.querySelector("input")), caja =  (d.querySelector("textarea"));
+      const n = () => nombre.value.trim(), poner = () => { caja.value = o.texto(n() || "(escribe tu nombre)"); };
+      const conNombre = () => { if (n()) return true; api.casi("Escribe tu nombre"); nombre.focus(); return false; };
+      function copiar() {
+        poner();
+        const hecho = () => api.bien("Mensaje copiado: pégalo en Telegram o en tu correo");
+        const viejo = () => {
+          caja.focus(); caja.select(); caja.setSelectionRange(0, caja.value.length);
+          try { if (document.execCommand("copy")) { hecho(); return; } } catch (e) {  }
+          api.casi("Mantén el dedo sobre el mensaje y elige «Copiar»");
+        };
+        if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(caja.value).then(hecho, viejo); else viejo();
+      }
+      nombre.addEventListener("input", poner);
+      d.addEventListener("click", e => {
+        const b =  (e.target).closest("button"); if (!b) return;
+        if (b.dataset.k === "cerrar") d.hidden = true;
+        else if (!conNombre()) return;
+        else if (b.dataset.k === "copiar") copiar();
+        else location.href = "mailto:" + o.correo + "?subject=" + encodeURIComponent(o.asunto(n())) + "&body=" + encodeURIComponent(o.texto(n()));
+      });
+      document.body.append(d);
+      return { abrir() { d.hidden = false; poner(); if (!n()) nombre.focus(); }, cerrar() { d.hidden = true; } };
+    },
+    bien(msg = "¡Muy bien!") { avisar("✓ " + msg, "k-bien"); nota(784, 0); nota(1046.5, 0.09); celebrar(); },
+    casi(msg = "¡Casi! Prueba otra vez") { avisar("↻ " + msg, "k-casi"); nota(523.25, 0); },
+    teclas(mapa) { Object.assign(teclas, mapa); },
+    tocar(piezas, destinos, soltar) {
+      let elegida =  (null);
+      document.addEventListener("click", e => {
+        const t =  (e.target);
+        const p = t.closest(piezas), d = t.closest(destinos);
+        if (p) { if (elegida) elegida.classList.remove("k-sel"); elegida = p; p.classList.add("k-sel"); return; }
+        if (d && elegida) { elegida.classList.remove("k-sel"); soltar(elegida, d); elegida = null; }
+      });
+    },
+    profe: {
+      publicar(estado) { try { localStorage.setItem(clave, JSON.stringify({ estado, t: Date.now() })); } catch (e) {  } },
+      escuchar(fn) {
+        addEventListener("storage", e => { if (e.key === clave && e.newValue) fn(JSON.parse(e.newValue).estado); });
+        if (location.hash === "#profe") try { const v = localStorage.getItem(clave); if (v) fn(JSON.parse(v).estado); } catch (e) {  }
+      },
+      abrir() { ClaveFamilias.pedir(() => window.open(location.pathname + location.search + "#profe", "_blank")); },
+    },
+    conClave(fn) { ClaveFamilias.pedir(fn); },
+    pantallaCompleta() { document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen(); },
+  };
+
+  function herramientas() {
+    const h = document.createElement("div"); h.className = "k-herramientas";
+    h.innerHTML = '<button class="k-btn k-pequeno" type="button" data-k="sonido" aria-pressed="false">🔈 Sonido</button>' +
+      '<button class="k-btn k-pequeno" type="button" data-k="completa">⛶ Pantalla completa</button>' +
+      (esProfe ? "" : '<button class="k-btn k-pequeno" type="button" data-k="profe" title="Abre la vista profe en otra pestaña (P)">👩‍🏫</button>');
+    h.addEventListener("click", e => {
+      const b =  (e.target).closest("button"); if (!b) return;
+      if (b.dataset.k === "sonido") { sonido = !sonido; b.setAttribute("aria-pressed", String(sonido)); b.textContent = sonido ? "🔊 Sonido" : "🔈 Sonido"; if (sonido) nota(880, 0); }
+      if (b.dataset.k === "completa") api.pantallaCompleta();
+      if (b.dataset.k === "profe") api.profe.abrir();
+    });
+    document.body.append(h);
+  }
+
+  addEventListener("keydown", e => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const t =  (e.target);
+    if (t.matches("input, textarea, [contenteditable]")) return;
+    const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (teclas[k]) { e.preventDefault(); teclas[k](); return; }
+    if (k === "f") api.pantallaCompleta();
+    else if (k === "p" && !esProfe) api.profe.abrir();
+  });
+  addEventListener("DOMContentLoaded", () => {
+    herramientas();
+    if (!esProfe) return;
+    if (ClaveFamilias.abierta()) { document.body.classList.add("k-profe"); return; }
+    document.body.style.visibility = "hidden";
+    ClaveFamilias.pedir(() => { document.body.style.visibility = ""; document.body.classList.add("k-profe"); },
+      () => { location.replace(location.pathname + location.search); });
+  });
+  return api;
+})();
+</script>
+<script id="pagina">"use strict";
+
+const CORREO = "andyclases@proton.me";
+const EXAMEN = {"A": [{"n": 1, "q": "9 × 2", "op": ["9", "20", "18", "19"], "ok": 2}, {"n": 2, "q": "9 × 9", "op": ["80", "81", "90", "72"], "ok": 1}, {"n": 3, "q": "3 × 3", "op": ["12", "8", "9", "10"], "ok": 2}, {"n": 4, "q": "7 × 6", "op": ["41", "48", "43", "42"], "ok": 3}, {"n": 5, "q": "3 × 2", "op": ["6", "7", "8", "3"], "ok": 0}, {"n": 6, "q": "8 × 3", "op": ["27", "16", "25", "24"], "ok": 3}, {"n": 7, "q": "4 × 8", "op": ["31", "36", "28", "32"], "ok": 3}, {"n": 8, "q": "7 × 5", "op": ["35", "40", "42", "28"], "ok": 0}, {"n": 9, "q": "4 × 2", "op": ["4", "7", "8", "12"], "ok": 2}, {"n": 10, "q": "4 × 3", "op": ["16", "13", "11", "12"], "ok": 3}, {"n": 11, "q": "583 + 760", "op": ["1333", "1343", "1344", "1353"], "ok": 1}, {"n": 12, "q": "465 + 985", "op": ["1350", "1440", "1450", "1460"], "ok": 2}, {"n": 13, "q": "16,4 + 88,5", "op": ["94,9", "114,9", "104,9", "105,9"], "ok": 2}, {"n": 14, "q": "945 − 828", "op": ["217", "127", "117", "123"], "ok": 2}, {"n": 15, "q": "32 × 13", "op": ["426", "406", "416", "128"], "ok": 2}, {"n": 16, "q": "24 × 21", "op": ["514", "504", "494", "528"], "ok": 1}, {"n": 17, "q": "Problema 1", "op": ["43", "42", "49", "48"], "ok": 1}, {"n": 18, "q": "Problema 2", "op": ["283", "373", "383", "393"], "ok": 2}], "B": [{"n": 1, "q": "8 × 5", "op": ["45", "32", "40", "48"], "ok": 2}, {"n": 2, "q": "6 × 6", "op": ["42", "36", "30", "35"], "ok": 1}, {"n": 3, "q": "5 × 9", "op": ["45", "46", "40", "50"], "ok": 0}, {"n": 4, "q": "5 × 2", "op": ["5", "10", "12", "9"], "ok": 1}, {"n": 5, "q": "6 × 8", "op": ["54", "42", "47", "48"], "ok": 3}, {"n": 6, "q": "9 × 3", "op": ["27", "36", "28", "18"], "ok": 0}, {"n": 7, "q": "2 × 2", "op": ["6", "4", "3", "5"], "ok": 1}, {"n": 8, "q": "4 × 5", "op": ["20", "21", "25", "24"], "ok": 0}, {"n": 9, "q": "6 × 2", "op": ["14", "18", "6", "12"], "ok": 3}, {"n": 10, "q": "3 × 7", "op": ["21", "20", "28", "22"], "ok": 0}, {"n": 11, "q": "621 + 914", "op": ["1536", "535", "1525", "1535"], "ok": 3}, {"n": 12, "q": "546 + 820", "op": ["366", "1366", "1356", "1367"], "ok": 1}, {"n": 13, "q": "52,9 + 98,7", "op": ["161,6", "150,6", "151,6", "141,6"], "ok": 2}, {"n": 14, "q": "690 − 624", "op": ["66", "76", "56", "166"], "ok": 0}, {"n": 15, "q": "41 × 12", "op": ["502", "492", "123", "482"], "ok": 1}, {"n": 16, "q": "33 × 23", "op": ["792", "759", "749", "769"], "ok": 1}, {"n": 17, "q": "Problema 1", "op": ["36", "32", "45", "37"], "ok": 0}, {"n": 18, "q": "Problema 2", "op": ["272", "182", "162", "172"], "ok": 3}]};
+let version = "", i = 0, elegida = -1, bloqueado = false, res = [];
+const $ = s => document.querySelector(s);
+function mostrar(id) { ["inicio", "juego", "fin"].forEach(x => { $("#" + x).hidden = x !== id; }); $("#comprobar").hidden = id !== "juego"; }
+function progreso() {
+  const n = version ? EXAMEN[version].length : 0, h = [];
+  for (let k = 0; k < n; k++) h.push("<span>" + (k < res.length ? (res[k] ? "⭐" : "🔍") : (k === i ? "●" : "·")) + "</span>");
+  $("#progreso").innerHTML = h.join("");
+}
+function pintar() {
+  const p = EXAMEN[version][i];
+  $("#consigna").textContent = "Ejercicio " + p.n + ": ¿qué te ha dado en el cuaderno?";
+  $("#op").innerHTML = "<small>Versión " + version + " · ejercicio " + p.n + "</small>" + p.q;
+  $("#opciones").innerHTML = p.op.map((t, k) =>
+    '<button class="k-opcion" type="button" data-k="' + k + '" aria-pressed="false"><span class="k-num">' + (k + 1) + "</span>" + t + "</button>").join("");
+  $("#solucion").textContent = p.op[p.ok];
+  elegida = -1; bloqueado = false; progreso();
+  Kit.profe.publicar({ version: version, i: i });
+}
+function empezar(v) { version = v; i = 0; res = []; mostrar("juego"); pintar(); }
+function elegir(k) {
+  if (bloqueado || !version) return;
+  elegida = k;
+  document.querySelectorAll(".k-opcion").forEach(b => b.setAttribute("aria-pressed", String(+b.dataset.k === k)));
+}
+function comprobar() {
+  if (bloqueado || !version) return;
+  if (elegida < 0) return Kit.casi("Elige el resultado que te ha dado");
+  bloqueado = true;
+  const p = EXAMEN[version][i], b = document.querySelector('.k-opcion[data-k="' + elegida + '"]');
+  const bien = elegida === p.ok;
+  res.push(bien);
+  if (bien) { b.classList.add("k-ok"); Kit.bien("¡Una estrella! ⭐"); }
+  else { b.classList.add("k-otra"); Kit.casi("Esta la revisas luego con calma 🔍"); }
+  progreso();
+  setTimeout(() => { if (i < EXAMEN[version].length - 1) { i++; pintar(); } else terminar(); }, 1500);
+}
+function revisar() { const r = []; res.forEach((b, k) => { if (!b) r.push(EXAMEN[version][k].n); }); return r; }
+function terminar() {
+  i = EXAMEN[version].length;
+  const e = res.filter(Boolean).length, r = revisar();
+  $("#consigna").textContent = "¡Has terminado!";
+  $("#fin").innerHTML = '<p class="estrellas">' + "⭐".repeat(e) + "</p><p>Has conseguido <b>" + e + " estrellas</b>. ¡Qué trabajo tan bonito!</p>" +
+    (r.length ? "<p>Revisa con calma en tu cuaderno: " + r.join(", ") + ".</p>" : "<p>¡Todas con estrella!</p>");
+  mostrar("fin"); progreso(); envio.abrir();
+}
+const envio = Kit.enviarProfe({
+  correo: CORREO,
+  asunto: n => n + ": estrellas del examen de Matemáticas",
+  texto: n => {
+    if (!version || !res.length) return "Hola, Andy:\n\n" + n + " todavía no ha empezado a comprobar el examen.\n\n¡Un saludo!";
+    const e = res.filter(Boolean).length, r = revisar();
+    return ["Hola, Andy:", "", n + " ha comprobado " + res.length + " ejercicios del examen de Matemáticas (versión " + version + ") y tiene " + e + " estrellas.",
+      r.length ? "Para revisar: ejercicios " + r.join(", ") + "." : "¡Todos con estrella!", "", "¡Un saludo!"].join("\n");
+  },
+});
+$("#inicio").addEventListener("click", e => { const b = e.target.closest(".k-version"); if (b) Kit.conClave(() => empezar(b.dataset.v)); });
+$("#opciones").addEventListener("click", e => { const b = e.target.closest(".k-opcion"); if (b) elegir(+b.dataset.k); });
+$("#comprobar").addEventListener("click", comprobar);
+$("#enviar").addEventListener("click", () => envio.abrir());
+function reiniciar() { version = ""; i = 0; res = []; $("#consigna").textContent = "¿Qué versión de examen tienes?"; $("#progreso").innerHTML = ""; $("#solucion").textContent = "—"; mostrar("inicio"); }
+$("#reiniciar").addEventListener("click", reiniciar);
+Kit.teclas({ "1": () => elegir(0), "2": () => elegir(1), "3": () => elegir(2), "4": () => elegir(3), " ": comprobar, "r": reiniciar });
+Kit.profe.escuchar(e => { if (e.version && (e.version !== version || e.i !== i)) { version = e.version; i = e.i; res = res.slice(0, i); mostrar("juego"); pintar(); } });
+mostrar("inicio");
+</script>
+</body></html>
